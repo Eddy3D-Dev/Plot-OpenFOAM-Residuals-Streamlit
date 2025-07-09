@@ -15,9 +15,17 @@ def order_of_magnitude(number):
 def roundup(x):
     return int(math.ceil(x / 100.0)) * 100
 
-def pre_parse(file):
-    """Parse OpenFOAM residuals file and return formatted data"""
-    raw_data = pd.read_csv(file, skiprows=1, delimiter='\s+')
+def pre_parse(content):
+    """Parse OpenFOAM residuals file content and return formatted data"""
+    from io import StringIO
+    
+    # If content is a list of lines, join them
+    if isinstance(content, list):
+        content_str = '\n'.join(content)
+    else:
+        content_str = content
+    
+    raw_data = pd.read_csv(StringIO(content_str), skiprows=1, delimiter=r'\s+')
     iterations = raw_data['#']
     data = raw_data.iloc[:, 1:].shift(+1, axis=1).drop(["Time"], axis=1)
     data = data.set_index(iterations)
@@ -91,8 +99,14 @@ if files:
         for file in files:
             if show_filenames:
                 st.subheader(f"File: {file.name}")
-            data, iterations = pre_parse(file)
+            
+            # Read and decode UploadedFile content
             file.seek(0)
+            content_bytes = file.read()
+            content_str = content_bytes.decode('utf-8')
+            lines = content_str.split('\n')
+            
+            data, iterations = pre_parse(lines)
             chart = create_altair_plot(data)
             st.altair_chart(chart)
     
@@ -101,8 +115,14 @@ if files:
         for file in files:
             if show_filenames:
                 st.subheader(f"File: {file.name}")
-            data, iterations = pre_parse(file)
+            
+            # Read and decode UploadedFile content
             file.seek(0)
+            content_bytes = file.read()
+            content_str = content_bytes.decode('utf-8')
+            lines = content_str.split('\n')
+            
+            data, iterations = pre_parse(lines)
             min_residual = math.pow(10, order_of_magnitude(data.min().min()))
             max_iter = data.index.max()
             fig = create_matplotlib_plot(data, width, height, min_residual, max_iter)
@@ -114,6 +134,12 @@ if files:
         for file in files:
             if show_filenames:
                 st.subheader(f"File: {file.name}")
-            data, iterations = pre_parse(file)
+            
+            # Read and decode UploadedFile content
             file.seek(0)
+            content_bytes = file.read()
+            content_str = content_bytes.decode('utf-8')
+            lines = content_str.split('\n')
+            
+            data, iterations = pre_parse(lines)
             st.dataframe(data)
