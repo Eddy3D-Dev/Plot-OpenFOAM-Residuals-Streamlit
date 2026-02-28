@@ -11,7 +11,11 @@ import pandas as pd
 import streamlit as st
 
 # Page configuration
-st.set_page_config(layout="centered")
+st.set_page_config(
+    page_title="OpenFOAM Residuals",
+    page_icon="📈",
+    layout="centered"
+)
 
 
 def create_altair_plot(data: pd.DataFrame) -> alt.Chart:
@@ -172,6 +176,8 @@ def main() -> None:
                     if show_filenames:
                         st.subheader(f"File: {item['name']}")
                     st.dataframe(item['data'])
+    else:
+        st.info("👋 Welcome! Please upload your `residual.dat` files using the uploader above to get started.")
 
 
 if __name__ == "__main__":
