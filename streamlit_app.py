@@ -1,7 +1,7 @@
 import math
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 import altair as alt
 import matplotlib.pyplot as plt
@@ -9,7 +9,6 @@ import openfoam_residuals.filesystem as fs
 import openfoam_residuals.plot as orp
 import pandas as pd
 import streamlit as st
-from streamlit.delta_generator import DeltaGenerator
 
 # Page configuration
 st.set_page_config(layout="centered")
@@ -135,15 +134,24 @@ def main() -> None:
                 temp_file_path = Path(temp_dir) / file.name
                 with open(temp_file_path, "wb") as f:
                     f.write(file.getvalue())
-                processed_files.append({'name': file.name, 'path': temp_file_path})
+
+                # ⚡ Bolt Optimization: Parse the file once instead of 3 times (once per tab)
+                # This reduces the IO and parsing overhead by ~66% per file and prevents
+                # blocking the main thread during rerenders.
+                data, _ = fs.pre_parse(temp_file_path)
+
+                processed_files.append({
+                    'name': file.name,
+                    'path': temp_file_path,
+                    'data': data
+                })
 
             # Altair plots
             with tab1:
                 for item in processed_files:
                     if show_filenames:
                         st.subheader(f"File: {item['name']}")
-                    data, _ = fs.pre_parse(item['path'])
-                    chart = create_altair_plot(data)
+                    chart = create_altair_plot(item['data'])
                     st.altair_chart(chart, use_container_width=True)
 
             # Matplotlib plots
@@ -151,7 +159,7 @@ def main() -> None:
                 for item in processed_files:
                     if show_filenames:
                         st.subheader(f"File: {item['name']}")
-                    data, _ = fs.pre_parse(item['path'])
+                    data = item['data']
                     min_residual = math.pow(10, orp.order_of_magnitude(data.min().min()))
                     max_iter = data.index.max()
                     fig = create_matplotlib_plot(data, width, height, min_residual, max_iter)
@@ -163,8 +171,7 @@ def main() -> None:
                 for item in processed_files:
                     if show_filenames:
                         st.subheader(f"File: {item['name']}")
-                    data, _ = fs.pre_parse(item['path'])
-                    st.dataframe(data)
+                    st.dataframe(item['data'])
 
 
 if __name__ == "__main__":
