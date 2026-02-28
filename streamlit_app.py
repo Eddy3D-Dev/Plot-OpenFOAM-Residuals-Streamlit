@@ -1,7 +1,7 @@
 import math
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 import altair as alt
 import matplotlib.pyplot as plt
@@ -9,10 +9,13 @@ import openfoam_residuals.filesystem as fs
 import openfoam_residuals.plot as orp
 import pandas as pd
 import streamlit as st
-from streamlit.delta_generator import DeltaGenerator
 
 # Page configuration
-st.set_page_config(layout="centered")
+st.set_page_config(
+    page_title="OpenFOAM Residuals",
+    page_icon="📈",
+    layout="centered"
+)
 
 
 def create_altair_plot(data: pd.DataFrame) -> alt.Chart:
@@ -165,6 +168,8 @@ def main() -> None:
                         st.subheader(f"File: {item['name']}")
                     data, _ = fs.pre_parse(item['path'])
                     st.dataframe(data)
+    else:
+        st.info("👋 Welcome! Please upload your `residual.dat` files using the uploader above to get started.")
 
 
 if __name__ == "__main__":
