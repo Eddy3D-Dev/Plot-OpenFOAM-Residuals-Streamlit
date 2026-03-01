@@ -1,0 +1,3 @@
+## 2026-03-01 - Redundant File Parsing in Streamlit Tabs
+**Learning:** In Streamlit, uploading a file and rendering it across multiple tabs can lead to redundant I/O and parsing operations (`O(N*T)` where N is files and T is tabs). Previously, `fs.pre_parse` was called three times per uploaded file (once for Altair, once for Matplotlib, once for Dataframe).
+**Action:** Use `@st.cache_data` on a wrapper function that handles the file reading and parsing. Parse the file once upon upload, store the result in memory (or caching layer), and reuse the parsed `pd.DataFrame` across all UI components (tabs) to reduce disk I/O and CPU overhead.
