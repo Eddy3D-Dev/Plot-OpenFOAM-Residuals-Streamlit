@@ -111,8 +111,8 @@ def main() -> None:
     # Sidebar controls
     with st.sidebar:
         st.subheader("Plot Settings")
-        width = st.number_input('Figure Width', min_value=1, value=10)
-        height = st.number_input('Figure Height', min_value=1, value=4)
+        width = st.number_input('Figure Width', min_value=1, value=10, help="Width of the Matplotlib figure in inches.")
+        height = st.number_input('Figure Height', min_value=1, value=4, help="Height of the Matplotlib figure in inches.")
         show_filenames = st.checkbox('Show Filenames', value=False)
 
     # File uploader
@@ -126,9 +126,9 @@ def main() -> None:
     if files:
         # Create tabs
         tab1, tab2, tab3 = st.tabs([
-            "Altair",
-            "Matplotlib",
-            "Dataframe"
+            "📊 Altair",
+            "📈 Matplotlib",
+            "📋 Dataframe"
         ])
 
         with tempfile.TemporaryDirectory() as temp_dir:
