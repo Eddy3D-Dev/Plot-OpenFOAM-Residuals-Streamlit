@@ -1,7 +1,6 @@
 import math
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
 
 import altair as alt
 import matplotlib.pyplot as plt
@@ -84,24 +83,17 @@ def create_matplotlib_plot(
     return fig
 
 
-def process_files(files: List[Any]) -> List[Dict[str, Any]]:
+@st.cache_data
+def parse_uploaded_file(file_name: str, file_content: bytes) -> tuple[pd.DataFrame, pd.Series]:
     """
-    Process uploaded files and save them to a temporary directory.
-
-    Args:
-        files (List[Any]): List of uploaded files.
-
-    Returns:
-        List[Dict[str, Any]]: List of dictionaries containing file name and path.
+    Parse the uploaded file once and cache the result.
+    This avoids redundant I/O and CPU overhead when switching between tabs.
     """
-    processed_files = []
-    # We need to keep the temp directory alive during the execution,
-    # but since Streamlit reruns the script, we can use a context manager in the main flow.
-    # However, to separate concerns, we might just return the data content or paths.
-    # Here we will assume the caller handles the temp dir context or we read immediately.
-    # Actually, the original code used a temp dir context block.
-    # To refactor cleanly, we'll handle file saving inside the main loop or a generator.
-    return processed_files
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_file_path = Path(temp_dir) / file_name
+        with open(temp_file_path, "wb") as f:
+            f.write(file_content)
+        return fs.pre_parse(temp_file_path)
 
 
 def main() -> None:
@@ -131,43 +123,39 @@ def main() -> None:
             "📋 Dataframe"
         ])
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # Create a list to hold information about the temporary files
-            processed_files = []
-            for file in files:
-                temp_file_path = Path(temp_dir) / file.name
-                with open(temp_file_path, "wb") as f:
-                    f.write(file.getvalue())
-                processed_files.append({'name': file.name, 'path': temp_file_path})
+        # Parse files once and cache results to reduce redundant file reading
+        # Expected Performance Impact: Reduces disk I/O and parsing overhead by ~66% (3 reads to 1)
+        parsed_files = []
+        for file in files:
+            data, iterations = parse_uploaded_file(file.name, file.getvalue())
+            parsed_files.append({'name': file.name, 'data': data, 'iterations': iterations})
 
-            # Altair plots
-            with tab1:
-                for item in processed_files:
-                    if show_filenames:
-                        st.subheader(f"File: {item['name']}")
-                    data, _ = fs.pre_parse(item['path'])
-                    chart = create_altair_plot(data)
-                    st.altair_chart(chart, use_container_width=True)
+        # Altair plots
+        with tab1:
+            for item in parsed_files:
+                if show_filenames:
+                    st.subheader(f"File: {item['name']}")
+                chart = create_altair_plot(item['data'])
+                st.altair_chart(chart, use_container_width=True)
 
-            # Matplotlib plots
-            with tab2:
-                for item in processed_files:
-                    if show_filenames:
-                        st.subheader(f"File: {item['name']}")
-                    data, _ = fs.pre_parse(item['path'])
-                    min_residual = math.pow(10, orp.order_of_magnitude(data.min().min()))
-                    max_iter = data.index.max()
-                    fig = create_matplotlib_plot(data, width, height, min_residual, max_iter)
-                    st.pyplot(fig)
-                    plt.close()
+        # Matplotlib plots
+        with tab2:
+            for item in parsed_files:
+                if show_filenames:
+                    st.subheader(f"File: {item['name']}")
+                data = item['data']
+                min_residual = math.pow(10, orp.order_of_magnitude(data.min().min()))
+                max_iter = data.index.max()
+                fig = create_matplotlib_plot(data, width, height, min_residual, max_iter)
+                st.pyplot(fig)
+                plt.close()
 
-            # Raw data
-            with tab3:
-                for item in processed_files:
-                    if show_filenames:
-                        st.subheader(f"File: {item['name']}")
-                    data, _ = fs.pre_parse(item['path'])
-                    st.dataframe(data)
+        # Raw data
+        with tab3:
+            for item in parsed_files:
+                if show_filenames:
+                    st.subheader(f"File: {item['name']}")
+                st.dataframe(item['data'])
     else:
         st.info("👋 Welcome! Please upload your `residual.dat` files using the uploader above to get started.")
 
