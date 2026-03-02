@@ -1,0 +1,3 @@
+## 2026-03-02 - Client-side Data Melting with Altair
+**Learning:** In Streamlit applications using Altair, reshaping large DataFrames on the Python backend using `pandas.melt()` is very expensive. It blocks the main thread, uses significant backend memory, and generates a massive JSON payload (6x larger for 6 variables) that has to be serialized and sent to the browser.
+**Action:** Use Altair's `.transform_fold()` to push the reshaping operation to the Vega-Lite engine on the client side. This allows the backend to send the compact, wide DataFrame, drastically reducing CPU time, memory footprint, and network latency.
