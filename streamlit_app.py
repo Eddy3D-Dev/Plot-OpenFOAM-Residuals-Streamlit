@@ -42,11 +42,11 @@ def create_altair_plot(data: pd.DataFrame) -> alt.Chart:
         x=alt.X('Time:Q', title='Iteration'),  # Use the 'Time' column for the x-axis
         y=alt.Y('Value:Q', scale=alt.Scale(type='log'), title='Residuals'),
         color=alt.Color('Residual:N', title='Variable'),
-        tooltip=[alt.Tooltip('Time:Q'), alt.Tooltip('Residual:N'), alt.Tooltip('Value:Q')]  # Update tooltip to use 'Time'
+        tooltip=[alt.Tooltip('Time:Q'), alt.Tooltip('Residual:N'), alt.Tooltip('Value:Q', format='.2e')]  # Update tooltip to use 'Time'
     ).properties(
         width=800,
         height=400
-    )
+    ).interactive()
 
     return chart
 
