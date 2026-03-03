@@ -87,15 +87,20 @@ def create_matplotlib_plot(
 
 
 @st.cache_data
-def parse_uploaded_file(file_name: str, file_content: bytes) -> tuple[pd.DataFrame, pd.Series]:
+def parse_uploaded_file(file_name: str, file_id: str, _file_content: bytes) -> tuple[pd.DataFrame, pd.Series]:
     """
     Parse the uploaded file once and cache the result.
     This avoids redundant I/O and CPU overhead when switching between tabs.
+
+    ⚡ Bolt Optimization: By adding a leading underscore to `_file_content`,
+    we prevent Streamlit from hashing the large bytes payload on every rerun.
+    Instead, Streamlit uses the small `file_id` string to manage cache invalidation.
+    Expected Performance Impact: Eliminates multi-second UI blocking caused by hashing large datasets.
     """
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_file_path = Path(temp_dir) / file_name
         with open(temp_file_path, "wb") as f:
-            f.write(file_content)
+            f.write(_file_content)
         return fs.pre_parse(temp_file_path)
 
 
@@ -130,7 +135,7 @@ def main() -> None:
         # Expected Performance Impact: Reduces disk I/O and parsing overhead by ~66% (3 reads to 1)
         parsed_files = []
         for file in files:
-            data, iterations = parse_uploaded_file(file.name, file.getvalue())
+            data, iterations = parse_uploaded_file(file.name, file.file_id, file.getvalue())
             parsed_files.append({'name': file.name, 'data': data, 'iterations': iterations})
 
         # Altair plots
