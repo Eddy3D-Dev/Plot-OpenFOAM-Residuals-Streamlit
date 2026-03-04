@@ -132,9 +132,9 @@ def main() -> None:
     if files:
         # Create tabs
         tab1, tab2, tab3 = st.tabs([
-            "📊 Altair",
-            "📈 Matplotlib",
-            "📋 Dataframe"
+            "📊 Interactive Plot",
+            "📈 Static Plot",
+            "📋 Raw Data"
         ])
 
         # Parse files once and cache results to reduce redundant file reading
