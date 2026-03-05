@@ -9,3 +9,7 @@
 ## 2026-03-04 - Matplotlib DPI Blocking Streamlit Main Thread
 **Learning:** Hardcoding a very high DPI (e.g., `plt.rcParams['figure.dpi'] = 600`) for Matplotlib plots in a Streamlit app severely degrades performance. Rendering a high-DPI plot blocks the main thread (taking 5+ seconds for moderately sized datasets) and generates massive image payloads that must be serialized and sent to the client. This is especially problematic in Streamlit where user interactions often trigger full script reruns.
 **Action:** Expose DPI as a user-configurable parameter in the UI with a sensible default (e.g., 100-150 DPI) for fast interactive exploration. Users can manually increase it only when they need a print-quality export.
+
+## 2026-03-05 - Data Visualization Bottlenecks in Streamlit
+**Learning:** Downsampling massive datasets simply for visualization is not a universally acceptable optimization. In some specific engineering contexts, plotting every data point might be desired, and downsampling logic might be seen as unexpected data modification or loss of fidelity, even if the raw data is technically untouched.
+**Action:** Do not forcefully implement visualization downsampling on user datasets without explicit instruction.
