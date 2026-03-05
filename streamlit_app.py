@@ -42,7 +42,7 @@ def create_altair_plot(data: pd.DataFrame) -> alt.Chart:
         x=alt.X('Time:Q', title='Iteration'),  # Use the 'Time' column for the x-axis
         y=alt.Y('Value:Q', scale=alt.Scale(type='log'), title='Residuals'),
         color=alt.Color('Residual:N', title='Variable'),
-        tooltip=[alt.Tooltip('Time:Q'), alt.Tooltip('Residual:N'), alt.Tooltip('Value:Q', format='.2e')]  # Update tooltip to use 'Time'
+        tooltip=[alt.Tooltip('Time:Q', title='Iteration'), alt.Tooltip('Residual:N', title='Variable'), alt.Tooltip('Value:Q', title='Residual', format='.2e')]  # Update tooltip to use 'Time'
     ).properties(
         width=800,
         height=400
@@ -116,9 +116,9 @@ def main() -> None:
     # Sidebar controls
     with st.sidebar:
         st.subheader("Plot Settings")
-        width = st.number_input('Figure Width', min_value=1, value=10, help="Width of the Matplotlib figure in inches.")
-        height = st.number_input('Figure Height', min_value=1, value=4, help="Height of the Matplotlib figure in inches.")
-        dpi = st.number_input('Figure DPI', min_value=50, max_value=600, value=150, help="Resolution of the Matplotlib figure. Lower values render faster.")
+        width = st.number_input('Figure Width', min_value=1, value=10, help="Width of the static plot in inches.")
+        height = st.number_input('Figure Height', min_value=1, value=4, help="Height of the static plot in inches.")
+        dpi = st.number_input('Figure DPI', min_value=50, max_value=600, value=150, help="Resolution of the static plot. Lower values render faster.")
         show_filenames = st.checkbox('Show Filenames', value=False)
 
     # File uploader
