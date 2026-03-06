@@ -13,3 +13,7 @@
 ## 2026-03-05 - Data Visualization Bottlenecks in Streamlit
 **Learning:** Downsampling massive datasets simply for visualization is not a universally acceptable optimization. In some specific engineering contexts, plotting every data point might be desired, and downsampling logic might be seen as unexpected data modification or loss of fidelity, even if the raw data is technically untouched.
 **Action:** Do not forcefully implement visualization downsampling on user datasets without explicit instruction.
+
+## 2026-03-05 - Safe Matplotlib Caching in Streamlit
+**Learning:** Matplotlib `Figure` objects are stateful and not thread-safe. Caching them directly using `@st.cache_resource` causes race conditions across user sessions. Caching them with `@st.cache_data` causes pickling errors. Additionally, hashing large DataFrame inputs to determine cache validity is extremely slow.
+**Action:** To safely cache Matplotlib plots, render the figure to a `BytesIO` buffer, close the figure to prevent memory leaks, and return the PNG bytes. Cache this function with `@st.cache_data`. Use an underscore prefix for the DataFrame argument (e.g., `_data`) to bypass expensive hashing, and pass a lightweight identifier (e.g., `file_id`) to manage cache invalidation correctly. Finally, render the cached bytes using `st.image()` instead of `st.pyplot()`.
