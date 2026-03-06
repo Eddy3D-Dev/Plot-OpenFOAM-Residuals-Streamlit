@@ -1,3 +1,4 @@
+import io
 import math
 import tempfile
 from pathlib import Path
@@ -49,6 +50,29 @@ def create_altair_plot(data: pd.DataFrame) -> alt.Chart:
     ).interactive()
 
     return chart
+
+
+# ⚡ Bolt Optimization: Cache Matplotlib rendering using an image buffer and bypass DataFrame hashing.
+# Expected Performance Impact:
+# Generating Matplotlib figures and rendering them blocks the main thread on every app rerun.
+# By caching the resulting PNG bytes, we bypass the O(N) plotting time and serialization overhead.
+# We use `_data` to bypass Streamlit's expensive DataFrame hashing, and instead use `file_id`
+# to invalidate the cache when a new file is uploaded.
+@st.cache_data
+def get_matplotlib_image_bytes(
+    _data: pd.DataFrame,
+    file_id: str,
+    width: int,
+    height: int,
+    dpi: int,
+    min_residual: float,
+    max_iter: int
+) -> bytes:
+    fig = create_matplotlib_plot(_data, width, height, dpi, min_residual, max_iter)
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", bbox_inches="tight")
+    plt.close(fig)
+    return buf.getvalue()
 
 
 def create_matplotlib_plot(
@@ -142,7 +166,7 @@ def main() -> None:
         parsed_files = []
         for file in files:
             data, iterations = parse_uploaded_file(file.name, file.file_id, file.getvalue())
-            parsed_files.append({'name': file.name, 'data': data, 'iterations': iterations})
+            parsed_files.append({'name': file.name, 'data': data, 'iterations': iterations, 'file_id': file.file_id})
 
         # Altair plots
         with tab1:
@@ -160,9 +184,8 @@ def main() -> None:
                 data = item['data']
                 min_residual = math.pow(10, orp.order_of_magnitude(data.min().min()))
                 max_iter = data.index.max()
-                fig = create_matplotlib_plot(data, width, height, dpi, min_residual, max_iter)
-                st.pyplot(fig)
-                plt.close()
+                img_bytes = get_matplotlib_image_bytes(data, item['file_id'], width, height, dpi, min_residual, max_iter)
+                st.image(img_bytes)
 
         # Raw data
         with tab3:
