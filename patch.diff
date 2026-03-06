@@ -1,0 +1,32 @@
+--- streamlit_app.py
++++ streamlit_app.py
+@@ -148,26 +148,15 @@
+             for file in files:
+                 try:
+                     data, iterations = parse_uploaded_file(file.name, file.file_id, file.getvalue())
+-                    parsed_files.append({'name': file.name, 'data': data, 'iterations': iterations})
++                    parsed_files.append({'name': file.name, 'data': data, 'iterations': iterations, 'file_id': file.file_id})
+                 except Exception:
+                     st.error(f"Error parsing '{file.name}'. Please ensure it is a valid OpenFOAM residual file.")
+
+         if not parsed_files:
+             return
+
+         # Create tabs
+         tab1, tab2, tab3 = st.tabs([
+             "📊 Interactive Plot",
+             "📈 Static Plot",
+             "📋 Raw Data"
+         ])
+-
+-<<<<<<< Updated upstream
+-=======
+-        # Parse files once and cache results to reduce redundant file reading
+-        # Expected Performance Impact: Reduces disk I/O and parsing overhead by ~66% (3 reads to 1)
+-        parsed_files = []
+-        for file in files:
+-            data, iterations = parse_uploaded_file(file.name, file.file_id, file.getvalue())
+-            parsed_files.append({'name': file.name, 'data': data, 'iterations': iterations, 'file_id': file.file_id})
+-
+->>>>>>> Stashed changes
+         # Altair plots

@@ -154,19 +154,26 @@ def main() -> None:
     )
 
     if files:
+        # Parse files once and cache results to reduce redundant file reading
+        # Expected Performance Impact: Reduces disk I/O and parsing overhead by ~66% (3 reads to 1)
+        parsed_files = []
+        with st.spinner("Processing files..."):
+            for file in files:
+                try:
+                    data, iterations = parse_uploaded_file(file.name, file.file_id, file.getvalue())
+                    parsed_files.append({'name': file.name, 'data': data, 'iterations': iterations, 'file_id': file.file_id})
+                except Exception:
+                    st.error(f"Error parsing '{file.name}'. Please ensure it is a valid OpenFOAM residual file.")
+
+        if not parsed_files:
+            return
+
         # Create tabs
         tab1, tab2, tab3 = st.tabs([
             "📊 Interactive Plot",
             "📈 Static Plot",
             "📋 Raw Data"
         ])
-
-        # Parse files once and cache results to reduce redundant file reading
-        # Expected Performance Impact: Reduces disk I/O and parsing overhead by ~66% (3 reads to 1)
-        parsed_files = []
-        for file in files:
-            data, iterations = parse_uploaded_file(file.name, file.file_id, file.getvalue())
-            parsed_files.append({'name': file.name, 'data': data, 'iterations': iterations, 'file_id': file.file_id})
 
         # Altair plots
         with tab1:
