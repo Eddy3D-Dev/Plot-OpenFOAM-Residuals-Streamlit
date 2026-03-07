@@ -140,11 +140,15 @@ def main() -> None:
 
     # Sidebar controls
     with st.sidebar:
-        st.subheader("Plot Settings")
+        st.subheader("📈 Static Plot Settings")
         width = st.number_input('Figure Width', min_value=1, value=10, help="Width of the static plot in inches.")
         height = st.number_input('Figure Height', min_value=1, value=4, help="Height of the static plot in inches.")
         dpi = st.number_input('Figure DPI', min_value=50, max_value=600, value=150, help="Resolution of the static plot. Lower values render faster.")
-        show_filenames = st.checkbox('Show Filenames', value=False)
+
+        st.divider()
+
+        st.subheader("⚙️ General Settings")
+        show_filenames = st.checkbox('Show Filenames', value=False, help="Display the filename above each plot when comparing multiple files.")
 
     # File uploader
     files = st.file_uploader(
@@ -178,7 +182,9 @@ def main() -> None:
 
         # Altair plots
         with tab1:
-            for item in parsed_files:
+            for i, item in enumerate(parsed_files):
+                if i > 0:
+                    st.divider()
                 if show_filenames:
                     st.subheader(f"File: {item['name']}")
                 chart = create_altair_plot(item['data'])
@@ -186,7 +192,9 @@ def main() -> None:
 
         # Matplotlib plots
         with tab2:
-            for item in parsed_files:
+            for i, item in enumerate(parsed_files):
+                if i > 0:
+                    st.divider()
                 if show_filenames:
                     st.subheader(f"File: {item['name']}")
                 data = item['data']
@@ -203,7 +211,9 @@ def main() -> None:
 
         # Raw data
         with tab3:
-            for item in parsed_files:
+            for i, item in enumerate(parsed_files):
+                if i > 0:
+                    st.divider()
                 if show_filenames:
                     st.subheader(f"File: {item['name']}")
                 st.dataframe(item['data'])
