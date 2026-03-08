@@ -12,11 +12,7 @@ import pandas as pd
 import streamlit as st
 
 # Page configuration
-st.set_page_config(
-    page_title="OpenFOAM Residuals",
-    page_icon="📈",
-    layout="centered"
-)
+st.set_page_config(page_title="OpenFOAM Residuals", page_icon="📈", layout="centered")
 
 
 def create_altair_plot(data: pd.DataFrame) -> alt.Chart:
@@ -37,18 +33,31 @@ def create_altair_plot(data: pd.DataFrame) -> alt.Chart:
     # 1. Eliminates O(N) DataFrame melting on the backend, saving CPU time.
     # 2. Reduces backend memory footprint and the JSON payload size sent to the frontend by ~6x
     #    because we send the wide DataFrame instead of a 6x longer melted DataFrame.
-    chart = alt.Chart(data_reset).transform_fold(
-        ['Ux', 'Uy', 'Uz', 'p', 'epsilon', 'k'],
-        as_=['Residual', 'Value']
-    ).mark_line(point=False).encode(
-        x=alt.X('Time:Q', title='Iteration'),  # Use the 'Time' column for the x-axis
-        y=alt.Y('Value:Q', scale=alt.Scale(type='log'), title='Residuals'),
-        color=alt.Color('Residual:N', title='Variable'),
-        tooltip=[alt.Tooltip('Time:Q', title='Iteration'), alt.Tooltip('Residual:N', title='Variable'), alt.Tooltip('Value:Q', title='Residual', format='.2e')]  # Update tooltip to use 'Time'
-    ).properties(
-        width=800,
-        height=400
-    ).interactive()
+
+    # 🎨 Palette UX: Add interactive legend to isolate specific residuals
+    selection = alt.selection_point(fields=["Residual"], bind="legend")
+
+    chart = (
+        alt.Chart(data_reset)
+        .transform_fold(list(data.columns), as_=["Residual", "Value"])
+        .mark_line(point=False)
+        .encode(
+            x=alt.X(
+                "Time:Q", title="Iteration"
+            ),  # Use the 'Time' column for the x-axis
+            y=alt.Y("Value:Q", scale=alt.Scale(type="log"), title="Residuals"),
+            color=alt.Color("Residual:N", title="Variable"),
+            opacity=alt.condition(selection, alt.value(1), alt.value(0.1)),
+            tooltip=[
+                alt.Tooltip("Time:Q", title="Iteration"),
+                alt.Tooltip("Residual:N", title="Variable"),
+                alt.Tooltip("Value:Q", title="Residual", format=".2e"),
+            ],  # Update tooltip to use 'Time'
+        )
+        .add_params(selection)
+        .properties(width=800, height=400)
+        .interactive()
+    )
 
     return chart
 
@@ -61,11 +70,7 @@ def create_altair_plot(data: pd.DataFrame) -> alt.Chart:
 # to invalidate the cache when a new file is uploaded.
 @st.cache_data
 def get_matplotlib_image_bytes(
-    _data: pd.DataFrame,
-    file_id: str,
-    width: int,
-    height: int,
-    dpi: int
+    _data: pd.DataFrame, file_id: str, width: int, height: int, dpi: int
 ) -> bytes:
     # ⚡ Bolt Optimization: Compute min/max inside the cached function
     # Expected Performance Impact: By moving these calculations inside the cache hit boundary,
@@ -88,7 +93,7 @@ def create_matplotlib_plot(
     height: int,
     dpi: int,
     min_residual: float,
-    max_iter: int
+    max_iter: int,
 ) -> plt.Figure:
     """
     Create a Matplotlib visualization for the residuals.
@@ -104,16 +109,16 @@ def create_matplotlib_plot(
     Returns:
         plt.Figure: The Matplotlib figure object.
     """
-    plt.rcParams['figure.figsize'] = [width, height]
+    plt.rcParams["figure.figsize"] = [width, height]
     # ⚡ Bolt Optimization: Use configurable DPI instead of hardcoded 600
     # Expected Performance Impact: Reduces Matplotlib rendering time by ~5-10x
     # and significantly decreases memory footprint and payload size.
-    plt.rcParams['figure.dpi'] = dpi
+    plt.rcParams["figure.dpi"] = dpi
 
     plot = data.plot(logy=True)
     fig = plot.get_figure()
     ax = plt.gca()
-    ax.legend(loc='upper right')
+    ax.legend(loc="upper right")
     ax.set_xlabel("Iterations")
     ax.set_ylabel("Residuals")
     ax.set_ylim(min_residual, 1)
@@ -123,7 +128,9 @@ def create_matplotlib_plot(
 
 
 @st.cache_data
-def parse_uploaded_file(file_name: str, file_id: str, _file_content: bytes) -> tuple[pd.DataFrame, pd.Series]:
+def parse_uploaded_file(
+    file_name: str, file_id: str, _file_content: bytes
+) -> tuple[pd.DataFrame, pd.Series]:
     """
     Parse the uploaded file once and cache the result.
     This avoids redundant I/O and CPU overhead when switching between tabs.
@@ -142,7 +149,7 @@ def parse_uploaded_file(file_name: str, file_id: str, _file_content: bytes) -> t
 
 def main() -> None:
     """Main function to run the Streamlit application."""
-    if 'processed_files' not in st.session_state:
+    if "processed_files" not in st.session_state:
         st.session_state.processed_files = set()
 
     st.header("Plot OpenFOAM Residuals")
@@ -150,21 +157,41 @@ def main() -> None:
     # Sidebar controls
     with st.sidebar:
         st.subheader("📈 Static Plot Settings")
-        width = st.number_input('Figure Width', min_value=1, value=10, help="Width of the static plot in inches.")
-        height = st.number_input('Figure Height', min_value=1, value=4, help="Height of the static plot in inches.")
-        dpi = st.number_input('Figure DPI', min_value=50, max_value=600, value=150, help="Resolution of the static plot. Lower values render faster.")
+        width = st.number_input(
+            "Figure Width",
+            min_value=1,
+            value=10,
+            help="Width of the static plot in inches.",
+        )
+        height = st.number_input(
+            "Figure Height",
+            min_value=1,
+            value=4,
+            help="Height of the static plot in inches.",
+        )
+        dpi = st.number_input(
+            "Figure DPI",
+            min_value=50,
+            max_value=600,
+            value=150,
+            help="Resolution of the static plot. Lower values render faster.",
+        )
 
         st.divider()
 
         st.subheader("⚙️ General Settings")
-        show_filenames = st.checkbox('Show Filenames', value=False, help="Display the filename above each plot when comparing multiple files.")
+        show_filenames = st.checkbox(
+            "Show Filenames",
+            value=False,
+            help="Display the filename above each plot when comparing multiple files.",
+        )
 
     # File uploader
     files = st.file_uploader(
         "Upload 'residual.dat' files here",
-        type=['dat'],
+        type=["dat"],
         accept_multiple_files=True,
-        help="Files should be located in the _postProcessing_ folder of the OpenFOAM case."
+        help="Files should be located in the _postProcessing_ folder of the OpenFOAM case.",
     )
 
     if files:
@@ -174,25 +201,34 @@ def main() -> None:
         with st.spinner("Processing files..."):
             for file in files:
                 try:
-                    data, iterations = parse_uploaded_file(file.name, file.file_id, file.getvalue())
-                    parsed_files.append({'name': file.name, 'data': data, 'iterations': iterations, 'file_id': file.file_id})
+                    data, iterations = parse_uploaded_file(
+                        file.name, file.file_id, file.getvalue()
+                    )
+                    parsed_files.append(
+                        {
+                            "name": file.name,
+                            "data": data,
+                            "iterations": iterations,
+                            "file_id": file.file_id,
+                        }
+                    )
                 except Exception:
-                    st.error(f"Error parsing '{file.name}'. Please ensure it is a valid OpenFOAM residual file.")
+                    st.error(
+                        f"Error parsing '{file.name}'. Please ensure it is a valid OpenFOAM residual file."
+                    )
 
         if not parsed_files:
             return
 
-        new_file_ids = {f['file_id'] for f in parsed_files}
+        new_file_ids = {f["file_id"] for f in parsed_files}
         if new_file_ids - st.session_state.processed_files:
             st.toast("Files processed successfully!", icon="✅")
             st.session_state.processed_files = new_file_ids
 
         # Create tabs
-        tab1, tab2, tab3 = st.tabs([
-            "📊 Interactive Plot",
-            "📈 Static Plot",
-            "📋 Raw Data"
-        ])
+        tab1, tab2, tab3 = st.tabs(
+            ["📊 Interactive Plot", "📈 Static Plot", "📋 Raw Data"]
+        )
 
         # Altair plots
         with tab1:
@@ -201,7 +237,7 @@ def main() -> None:
                     st.divider()
                 if show_filenames:
                     st.subheader(f"File: {item['name']}")
-                chart = create_altair_plot(item['data'])
+                chart = create_altair_plot(item["data"])
                 st.altair_chart(chart, use_container_width=True)
 
         # Matplotlib plots
@@ -211,12 +247,14 @@ def main() -> None:
                     st.divider()
                 if show_filenames:
                     st.subheader(f"File: {item['name']}")
-                data = item['data']
+                data = item["data"]
 
                 # ⚡ Bolt Optimization: The O(N) array calculations are now performed
                 # inside the cached `get_matplotlib_image_bytes` function to prevent redundant
                 # execution on every UI interaction cache hit.
-                img_bytes = get_matplotlib_image_bytes(data, item['file_id'], width, height, dpi)
+                img_bytes = get_matplotlib_image_bytes(
+                    data, item["file_id"], width, height, dpi
+                )
                 st.image(img_bytes)
 
         # Raw data
@@ -226,9 +264,11 @@ def main() -> None:
                     st.divider()
                 if show_filenames:
                     st.subheader(f"File: {item['name']}")
-                st.dataframe(item['data'], use_container_width=True)
+                st.dataframe(item["data"], use_container_width=True)
     else:
-        st.info("👋 Welcome! Please upload your `residual.dat` files using the uploader above to get started.")
+        st.info(
+            "👋 Welcome! Please upload your `residual.dat` files using the uploader above to get started."
+        )
 
 
 if __name__ == "__main__":
