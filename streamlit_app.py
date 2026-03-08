@@ -136,6 +136,9 @@ def parse_uploaded_file(file_name: str, file_id: str, _file_content: bytes) -> t
 
 def main() -> None:
     """Main function to run the Streamlit application."""
+    if 'processed_files' not in st.session_state:
+        st.session_state.processed_files = set()
+
     st.header("Plot OpenFOAM Residuals")
 
     # Sidebar controls
@@ -172,6 +175,11 @@ def main() -> None:
 
         if not parsed_files:
             return
+
+        new_file_ids = {f['file_id'] for f in parsed_files}
+        if new_file_ids - st.session_state.processed_files:
+            st.toast("Files processed successfully!", icon="✅")
+            st.session_state.processed_files = new_file_ids
 
         # Create tabs
         tab1, tab2, tab3 = st.tabs([
@@ -216,7 +224,7 @@ def main() -> None:
                     st.divider()
                 if show_filenames:
                     st.subheader(f"File: {item['name']}")
-                st.dataframe(item['data'])
+                st.dataframe(item['data'], use_container_width=True)
     else:
         st.info("👋 Welcome! Please upload your `residual.dat` files using the uploader above to get started.")
 
