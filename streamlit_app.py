@@ -123,7 +123,7 @@ def create_matplotlib_plot(
 
 
 @st.cache_data
-def parse_uploaded_file(file_name: str, file_id: str, _file_content: bytes) -> tuple[pd.DataFrame, pd.Series]:
+def parse_uploaded_file(file_name: str, file_id: str, _file_content: bytes) -> pd.DataFrame:
     """
     Parse the uploaded file once and cache the result.
     This avoids redundant I/O and CPU overhead when switching between tabs.
@@ -132,12 +132,18 @@ def parse_uploaded_file(file_name: str, file_id: str, _file_content: bytes) -> t
     we prevent Streamlit from hashing the large bytes payload on every rerun.
     Instead, Streamlit uses the small `file_id` string to manage cache invalidation.
     Expected Performance Impact: Eliminates multi-second UI blocking caused by hashing large datasets.
+
+    ⚡ Bolt Optimization: Return only the DataFrame and discard the separate 'iterations' Series.
+    Expected Performance Impact: Streamlit's @st.cache_data serializes and stores deep copies
+    of all returned values. Returning the DataFrame alongside its standalone index essentially
+    doubles memory usage and serialization overhead. The index is already attached to the DataFrame.
     """
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_file_path = Path(temp_dir) / file_name
         with open(temp_file_path, "wb") as f:
             f.write(_file_content)
-        return fs.pre_parse(temp_file_path)
+        data, _ = fs.pre_parse(temp_file_path)
+        return data
 
 
 def main() -> None:
@@ -174,8 +180,8 @@ def main() -> None:
         with st.spinner("Processing files..."):
             for file in files:
                 try:
-                    data, iterations = parse_uploaded_file(file.name, file.file_id, file.getvalue())
-                    parsed_files.append({'name': file.name, 'data': data, 'iterations': iterations, 'file_id': file.file_id})
+                    data = parse_uploaded_file(file.name, file.file_id, file.getvalue())
+                    parsed_files.append({'name': file.name, 'data': data, 'file_id': file.file_id})
                 except Exception:
                     st.error(f"Error parsing '{file.name}'. Please ensure it is a valid OpenFOAM residual file.")
 
