@@ -65,10 +65,16 @@ def get_matplotlib_image_bytes(
     file_id: str,
     width: int,
     height: int,
-    dpi: int,
-    min_residual: float,
-    max_iter: int
+    dpi: int
 ) -> bytes:
+    # ⚡ Bolt Optimization: Compute min/max inside the cached function
+    # Expected Performance Impact: By moving these calculations inside the cache hit boundary,
+    # we eliminate the CPU overhead of computing them on every single Streamlit script rerun
+    # (e.g., when the user toggles the sidebar checkbox).
+    global_min = float(np.nanmin(_data.values))
+    min_residual = math.pow(10, orp.order_of_magnitude(global_min))
+    max_iter = int(_data.index[-1])  # OpenFOAM iterations are monotonically increasing
+
     fig = create_matplotlib_plot(_data, width, height, dpi, min_residual, max_iter)
     buf = io.BytesIO()
     fig.savefig(buf, format="png", bbox_inches="tight")
@@ -199,14 +205,10 @@ def main() -> None:
                     st.subheader(f"File: {item['name']}")
                 data = item['data']
 
-                # ⚡ Bolt Optimization: Use NumPy and indexing for faster min/max calculation
-                # Expected Performance Impact: Reduces min/max calculation time by ~15x,
-                # preventing redundant CPU overhead when rendering Matplotlib plots.
-                global_min = float(np.nanmin(data.values))
-                min_residual = math.pow(10, orp.order_of_magnitude(global_min))
-                max_iter = int(data.index[-1])  # OpenFOAM iterations are monotonically increasing
-
-                img_bytes = get_matplotlib_image_bytes(data, item['file_id'], width, height, dpi, min_residual, max_iter)
+                # ⚡ Bolt Optimization: The O(N) array calculations are now performed
+                # inside the cached `get_matplotlib_image_bytes` function to prevent redundant
+                # execution on every UI interaction cache hit.
+                img_bytes = get_matplotlib_image_bytes(data, item['file_id'], width, height, dpi)
                 st.image(img_bytes)
 
         # Raw data
