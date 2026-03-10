@@ -20,3 +20,7 @@
 ## 2026-03-05 - Interactive Legends in Dense Plots
 **Learning:** For line charts with multiple series (like plotting various OpenFOAM residuals), static plots often become visually overwhelming and unreadable as lines overlap.
 **Action:** Always enhance UX by implementing interactive legends using `alt.selection_point(bind='legend')` with conditional opacity. This allows users to isolate specific variables dynamically without the need for additional UI controls like checkboxes, reducing visual clutter.
+
+## 2026-03-05 - Dynamic Variable Parsing
+**Learning:** Hardcoding expected variables (e.g., `['Ux', 'Uy', 'Uz', 'p', 'epsilon', 'k']`) when creating plots in Streamlit using Altair's `.transform_fold()` leads to silent data omission if the user uploads a dataset with different variables (like `omega` or `nuTilda`), which degrades trust and usability.
+**Action:** Always use dynamic column references (e.g., `list(data.columns)`) when transforming and plotting user-uploaded datasets to ensure all variables are robustly parsed and displayed, accommodating diverse user data.

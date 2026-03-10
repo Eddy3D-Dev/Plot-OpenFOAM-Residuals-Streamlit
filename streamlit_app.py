@@ -43,7 +43,7 @@ def create_altair_plot(data: pd.DataFrame) -> alt.Chart:
     selection = alt.selection_point(fields=['Residual'], bind='legend')
 
     chart = alt.Chart(data_reset).transform_fold(
-        ['Ux', 'Uy', 'Uz', 'p', 'epsilon', 'k'],
+        list(data.columns),
         as_=['Residual', 'Value']
     ).mark_line(point=False).encode(
         x=alt.X('Time:Q', title='Iteration'),  # Use the 'Time' column for the x-axis
