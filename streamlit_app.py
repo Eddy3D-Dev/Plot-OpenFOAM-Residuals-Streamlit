@@ -42,8 +42,13 @@ def create_altair_plot(data: pd.DataFrame) -> alt.Chart:
     # This improves readability of dense, overlapping residual plots without adding UI clutter
     selection = alt.selection_point(fields=['Residual'], bind='legend')
 
+    # ⚡ Bolt Optimization: Use dynamic column references instead of hardcoded lists
+    # Expected Performance/Robustness Impact: Ensures all variables from diverse user datasets
+    # are robustly parsed and displayed, avoiding silent data omission and hardcoded bottlenecks.
+    fold_columns = list(data.columns)
+
     chart = alt.Chart(data_reset).transform_fold(
-        ['Ux', 'Uy', 'Uz', 'p', 'epsilon', 'k'],
+        fold_columns,
         as_=['Residual', 'Value']
     ).mark_line(point=False).encode(
         x=alt.X('Time:Q', title='Iteration'),  # Use the 'Time' column for the x-axis

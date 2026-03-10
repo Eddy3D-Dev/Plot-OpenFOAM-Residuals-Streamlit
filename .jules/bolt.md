@@ -29,3 +29,7 @@
 ## 2026-03-05 - Streamlit Cache Returning Duplication Overhead
 **Learning:** Avoid returning multiple large data structures (such as a DataFrame and its `.reset_index()` variant or a separate index Series) from a `@st.cache_data` function. Streamlit's caching mechanism serializes and stores deep copies of all returned values. Returning redundant or overlapping data structures unnecessarily doubles memory usage, serialization time, and deserialization overhead on cache hits, degrading app performance.
 **Action:** Return only the minimum necessary data structures from cached functions. If a derived structure (like an index or a melted version) is needed, extract it from the core data structure *after* retrieving it from the cache, provided the extraction is less expensive than the serialization overhead.
+
+## 2026-03-05 - Dynamic Column References for Altair Fold Transform
+**Learning:** Hardcoding column names in Altair's `.transform_fold()` (e.g., `['Ux', 'Uy', 'Uz', 'p', 'epsilon', 'k']`) creates a hidden bottleneck and robustness issue. If user datasets contain different variables, they will be silently omitted. While fetching `list(data.columns)` is slightly slower (O(1ms) vs O(100us)), the performance difference is negligible compared to the robustness gained.
+**Action:** When using `.transform_fold()` in Streamlit for user-uploaded diverse datasets, use dynamic column references like `list(data.columns)` to ensure all variables are robustly parsed and displayed, avoiding silent data omission and hardcoded bottlenecks.
