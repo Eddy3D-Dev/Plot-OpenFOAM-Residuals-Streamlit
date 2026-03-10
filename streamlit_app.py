@@ -37,6 +37,11 @@ def create_altair_plot(data: pd.DataFrame) -> alt.Chart:
     # 1. Eliminates O(N) DataFrame melting on the backend, saving CPU time.
     # 2. Reduces backend memory footprint and the JSON payload size sent to the frontend by ~6x
     #    because we send the wide DataFrame instead of a 6x longer melted DataFrame.
+    # 🎨 Palette Improvement: Interactive Legend
+    # Allows users to click legend items to isolate specific variables
+    # This improves readability of dense, overlapping residual plots without adding UI clutter
+    selection = alt.selection_point(fields=['Residual'], bind='legend')
+
     chart = alt.Chart(data_reset).transform_fold(
         ['Ux', 'Uy', 'Uz', 'p', 'epsilon', 'k'],
         as_=['Residual', 'Value']
@@ -44,7 +49,10 @@ def create_altair_plot(data: pd.DataFrame) -> alt.Chart:
         x=alt.X('Time:Q', title='Iteration'),  # Use the 'Time' column for the x-axis
         y=alt.Y('Value:Q', scale=alt.Scale(type='log'), title='Residuals'),
         color=alt.Color('Residual:N', title='Variable'),
+        opacity=alt.condition(selection, alt.value(1), alt.value(0.2)),
         tooltip=[alt.Tooltip('Time:Q', title='Iteration'), alt.Tooltip('Residual:N', title='Variable'), alt.Tooltip('Value:Q', title='Residual', format='.2e')]  # Update tooltip to use 'Time'
+    ).add_params(
+        selection
     ).properties(
         width=800,
         height=400
