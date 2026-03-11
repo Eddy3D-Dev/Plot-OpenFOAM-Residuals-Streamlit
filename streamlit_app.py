@@ -131,15 +131,17 @@ def create_matplotlib_plot(
 
 
 @st.cache_data
-def parse_uploaded_file(file_name: str, file_id: str, _file_content: bytes) -> pd.DataFrame:
+def parse_uploaded_file(file_name: str, file_id: str, _file: st.runtime.uploaded_file_manager.UploadedFile) -> pd.DataFrame:
     """
     Parse the uploaded file once and cache the result.
     This avoids redundant I/O and CPU overhead when switching between tabs.
 
-    ⚡ Bolt Optimization: By adding a leading underscore to `_file_content`,
-    we prevent Streamlit from hashing the large bytes payload on every rerun.
-    Instead, Streamlit uses the small `file_id` string to manage cache invalidation.
-    Expected Performance Impact: Eliminates multi-second UI blocking caused by hashing large datasets.
+    ⚡ Bolt Optimization: By passing the UploadedFile object (prefixed with `_` to bypass hashing)
+    instead of calling `_file.getvalue()` at the call site, we defer the expensive memory allocation
+    and I/O of `getvalue()` to only execute on cache misses. During cache hits (which happen on
+    every UI interaction), `getvalue()` is skipped entirely.
+    Expected Performance Impact: Prevents redundantly allocating large file contents into memory
+    on every single Streamlit rerun, drastically reducing memory churn and execution time.
 
     ⚡ Bolt Optimization: Return only the DataFrame and discard the separate 'iterations' Series.
     Expected Performance Impact: Streamlit's @st.cache_data serializes and stores deep copies
@@ -149,7 +151,7 @@ def parse_uploaded_file(file_name: str, file_id: str, _file_content: bytes) -> p
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_file_path = Path(temp_dir) / file_name
         with open(temp_file_path, "wb") as f:
-            f.write(_file_content)
+            f.write(_file.getvalue())
         data, _ = fs.pre_parse(temp_file_path)
         return data
 
@@ -188,7 +190,7 @@ def main() -> None:
         with st.spinner("Processing files..."):
             for file in files:
                 try:
-                    data = parse_uploaded_file(file.name, file.file_id, file.getvalue())
+                    data = parse_uploaded_file(file.name, file.file_id, file)
                     parsed_files.append({'name': file.name, 'data': data, 'file_id': file.file_id})
                 except Exception:
                     st.error(f"Error parsing '{file.name}'. Please ensure it is a valid OpenFOAM residual file.")
