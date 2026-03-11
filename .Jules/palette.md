@@ -24,3 +24,7 @@
 ## 2026-03-05 - Dynamic Variable Parsing
 **Learning:** Hardcoding expected variables (e.g., `['Ux', 'Uy', 'Uz', 'p', 'epsilon', 'k']`) when creating plots in Streamlit using Altair's `.transform_fold()` leads to silent data omission if the user uploads a dataset with different variables (like `omega` or `nuTilda`), which degrades trust and usability.
 **Action:** Always use dynamic column references (e.g., `list(data.columns)`) when transforming and plotting user-uploaded datasets to ensure all variables are robustly parsed and displayed, accommodating diverse user data.
+
+## 2026-03-11 - Export Options for Generated Content
+**Learning:** For web applications that generate visual content (like high-quality static Matplotlib plots), users naturally expect to be able to save them. Relying entirely on browser functionality like "Right Click -> Save Image As" is undiscoverable and often provides a poor user experience, especially if the underlying image is displayed differently (e.g., within an `st.image` wrapper that might alter its natural behavior).
+**Action:** Always provide explicit, discoverable export options (like `st.download_button`) below generated visualizations, ensuring the downloaded file has a meaningful, pre-populated filename (e.g., incorporating the original uploaded filename).

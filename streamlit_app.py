@@ -233,6 +233,17 @@ def main() -> None:
                 img_bytes = get_matplotlib_image_bytes(data, item['file_id'], width, height, dpi)
                 st.image(img_bytes)
 
+                # 🎨 Palette Improvement: Export Options
+                # Allowing users to directly download the generated plot improves UX over relying
+                # on browser "Save Image As..." functionality.
+                st.download_button(
+                    label=f"Download {item['name']} Plot",
+                    data=img_bytes,
+                    file_name=f"{item['name'].replace('.dat', '')}_plot.png",
+                    mime="image/png",
+                    icon=":material/download:"
+                )
+
         # Raw data
         with tab3:
             for i, item in enumerate(parsed_files):
