@@ -126,6 +126,7 @@ def create_matplotlib_plot(
     ax.set_ylabel("Residuals")
     ax.set_ylim(min_residual, 1)
     ax.set_xlim(0, max_iter)
+    ax.grid(True, which="both", linestyle="--", alpha=0.5)
 
     return fig
 
