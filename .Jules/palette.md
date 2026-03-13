@@ -32,3 +32,7 @@
 ## 2024-03-05 - Grid Lines for Log-Scale Plots
 **Learning:** Static log-scale plots (like OpenFOAM residuals) are notoriously difficult to read without grid lines, as users struggle to trace data points back to the axis across large empty spaces.
 **Action:** Always include subtle grid lines (`ax.grid(True, which="both", alpha=0.5)`) on generated static plots, especially those using logarithmic scales, to significantly improve visual accessibility and data tracking.
+
+## 2026-03-13 - Contextual Disabled States and Tooltips
+**Learning:** Using progressive disclosure and conditionally disabling sidebar inputs until prerequisite data (like an uploaded file) is provided significantly improves UX. Users aren't left guessing why changing a setting has no effect, especially when paired with a contextual tooltip explaining *why* the input is disabled.
+**Action:** Always conditionally disable input controls that depend on uploaded data, and replace the standard `help` text with a clear, actionable explanation (e.g., "⚠️ Please upload a residual file first to enable this setting.") while the input is in a disabled state.
