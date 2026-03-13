@@ -33,3 +33,7 @@
 ## 2026-03-11 - Streamlit Hashing Overhead for Uploaded Files requires Lazy getvalue()
 **Learning:** Calling `.getvalue()` on a Streamlit `UploadedFile` before passing it to an `@st.cache_data` function triggers memory allocation and I/O for the entire file payload. Because Streamlit re-evaluates the entire script on every user interaction (like clicking a tab), this means the `.getvalue()` call executes redundantly, even on cache hits, causing a memory and CPU spike.
 **Action:** Pass the `UploadedFile` object itself prefixed with an underscore (e.g., `_file`) to the cached function instead of the bytes. Then, only call `_file.getvalue()` inside the function body so that the expensive memory allocation is truly deferred and only executes on cache misses.
+
+## 2026-03-13 - Pandas plotting wrapper overhead and thread-safety
+**Learning:** Using `data.plot(logy=True)` to plot a pandas DataFrame utilizes its internal wrapper, which adds considerable overhead (~60% slower on 1M rows) compared to extracting the values and plotting natively with Matplotlib. Furthermore, the previous implementation modified global `plt.rcParams` to configure `figsize` and `dpi`, which causes race conditions in a multi-user, multi-threaded environment like Streamlit.
+**Action:** Initialize figures directly with `fig, ax = plt.subplots(figsize=..., dpi=...)` to avoid mutating global Matplotlib state and pass the raw data explicitly `ax.plot(data.index, data.values)` to avoid pandas metadata parsing overhead.
