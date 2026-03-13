@@ -73,7 +73,8 @@ def get_matplotlib_image_bytes(
     file_id: str,
     width: int,
     height: int,
-    dpi: int
+    dpi: int,
+    show_grid: bool
 ) -> bytes:
     # ⚡ Bolt Optimization: Compute min/max inside the cached function
     # Expected Performance Impact: By moving these calculations inside the cache hit boundary,
@@ -83,7 +84,7 @@ def get_matplotlib_image_bytes(
     min_residual = math.pow(10, orp.order_of_magnitude(global_min))
     max_iter = int(_data.index[-1])  # OpenFOAM iterations are monotonically increasing
 
-    fig = create_matplotlib_plot(_data, width, height, dpi, min_residual, max_iter)
+    fig = create_matplotlib_plot(_data, width, height, dpi, min_residual, max_iter, show_grid)
     buf = io.BytesIO()
     fig.savefig(buf, format="png", bbox_inches="tight")
     plt.close(fig)
@@ -96,7 +97,8 @@ def create_matplotlib_plot(
     height: int,
     dpi: int,
     min_residual: float,
-    max_iter: int
+    max_iter: int,
+    show_grid: bool
 ) -> plt.Figure:
     """
     Create a Matplotlib visualization for the residuals.
@@ -108,6 +110,7 @@ def create_matplotlib_plot(
         dpi (int): The DPI (resolution) of the figure.
         min_residual (float): The minimum residual value for the y-axis.
         max_iter (int): The maximum iteration number for the x-axis.
+        show_grid (bool): Whether to show grid lines.
 
     Returns:
         plt.Figure: The Matplotlib figure object.
@@ -126,6 +129,8 @@ def create_matplotlib_plot(
     ax.set_ylabel("Residuals")
     ax.set_ylim(min_residual, 1)
     ax.set_xlim(0, max_iter)
+    if show_grid:
+        ax.grid(True, which="both", linestyle="--", alpha=0.5)
 
     return fig
 
@@ -169,6 +174,7 @@ def main() -> None:
         width = st.number_input('Figure Width', min_value=1, value=10, help="Width of the static plot in inches.")
         height = st.number_input('Figure Height', min_value=1, value=4, help="Height of the static plot in inches.")
         dpi = st.number_input('Figure DPI', min_value=50, max_value=600, value=150, help="Resolution of the static plot. Lower values render faster.")
+        show_grid = st.checkbox('Show Grid Lines', value=True, help="Display subtle grid lines on the static plot to improve readability.")
 
         st.divider()
 
@@ -232,7 +238,7 @@ def main() -> None:
                 # ⚡ Bolt Optimization: The O(N) array calculations are now performed
                 # inside the cached `get_matplotlib_image_bytes` function to prevent redundant
                 # execution on every UI interaction cache hit.
-                img_bytes = get_matplotlib_image_bytes(data, item['file_id'], width, height, dpi)
+                img_bytes = get_matplotlib_image_bytes(data, item['file_id'], width, height, dpi, show_grid)
                 st.image(img_bytes)
 
                 # 🎨 Palette Improvement: Export Options

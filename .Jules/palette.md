@@ -28,3 +28,7 @@
 ## 2026-03-11 - Export Options for Generated Content
 **Learning:** For web applications that generate visual content (like high-quality static Matplotlib plots), users naturally expect to be able to save them. Relying entirely on browser functionality like "Right Click -> Save Image As" is undiscoverable and often provides a poor user experience, especially if the underlying image is displayed differently (e.g., within an `st.image` wrapper that might alter its natural behavior).
 **Action:** Always provide explicit, discoverable export options (like `st.download_button`) below generated visualizations, ensuring the downloaded file has a meaningful, pre-populated filename (e.g., incorporating the original uploaded filename).
+
+## 2024-03-05 - Grid Lines for Log-Scale Plots
+**Learning:** Static log-scale plots (like OpenFOAM residuals) are notoriously difficult to read without grid lines, as users struggle to trace data points back to the axis across large empty spaces.
+**Action:** Always include subtle grid lines (`ax.grid(True, which="both", alpha=0.5)`) on generated static plots, especially those using logarithmic scales, to significantly improve visual accessibility and data tracking.
