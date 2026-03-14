@@ -36,3 +36,7 @@
 ## 2026-03-13 - Contextual Disabled States and Tooltips
 **Learning:** Using progressive disclosure and conditionally disabling sidebar inputs until prerequisite data (like an uploaded file) is provided significantly improves UX. Users aren't left guessing why changing a setting has no effect, especially when paired with a contextual tooltip explaining *why* the input is disabled.
 **Action:** Always conditionally disable input controls that depend on uploaded data, and replace the standard `help` text with a clear, actionable explanation (e.g., "⚠️ Please upload a residual file first to enable this setting.") while the input is in a disabled state.
+
+## 2026-03-14 - Data Summarization & Formatting in Tables
+**Learning:** Presenting a raw, massive dataset (like OpenFOAM residuals) directly in a table is overwhelming and unhelpful for the user's primary goal, which is usually assessing the final convergence state. Users are forced to scroll past thousands of rows to find the only information they care about. Additionally, raw floating-point numbers often display poorly without consistent formatting.
+**Action:** Always provide a high-level summary (e.g., using `st.metric` cards) of the most important data points (like the final iteration values) *above* the raw data table. Furthermore, use tools like `st.column_config` to enforce consistent, readable formatting (e.g., scientific notation `%.4e` for residuals) across the entire dataframe to improve scannability and professional polish.
