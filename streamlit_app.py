@@ -169,19 +169,6 @@ def main() -> None:
 
     st.header("Plot OpenFOAM Residuals")
 
-    # Sidebar controls
-    with st.sidebar:
-        st.subheader("📈 Static Plot Settings")
-        width = st.number_input('Figure Width', min_value=1, value=10, help="Width of the static plot in inches.")
-        height = st.number_input('Figure Height', min_value=1, value=4, help="Height of the static plot in inches.")
-        dpi = st.number_input('Figure DPI', min_value=50, max_value=600, value=150, help="Resolution of the static plot. Lower values render faster.")
-        show_grid = st.checkbox('Show Grid Lines', value=True, help="Display subtle grid lines on the static plot to improve readability.")
-
-        st.divider()
-
-        st.subheader("⚙️ General Settings")
-        show_filenames = st.checkbox('Show Filenames', value=False, help="Display the filename above each plot when comparing multiple files.")
-
     # File uploader
     files = st.file_uploader(
         "Upload 'residual.dat' files here",
@@ -189,6 +176,20 @@ def main() -> None:
         accept_multiple_files=True,
         help="Files should be located in the _postProcessing_ folder of the OpenFOAM case."
     )
+    has_files = bool(files)
+
+    # Sidebar controls
+    with st.sidebar:
+        st.subheader("📈 Static Plot Settings")
+        width = st.number_input('Figure Width', min_value=1, value=10, help="Width of the static plot in inches." if has_files else "⚠️ Please upload a residual file first to enable this setting.", disabled=not has_files)
+        height = st.number_input('Figure Height', min_value=1, value=4, help="Height of the static plot in inches." if has_files else "⚠️ Please upload a residual file first to enable this setting.", disabled=not has_files)
+        dpi = st.number_input('Figure DPI', min_value=50, max_value=600, value=150, help="Resolution of the static plot. Lower values render faster." if has_files else "⚠️ Please upload a residual file first to enable this setting.", disabled=not has_files)
+        show_grid = st.checkbox('Show Grid Lines', value=True, help="Display subtle grid lines on the static plot to improve readability." if has_files else "⚠️ Please upload a residual file first to enable this setting.", disabled=not has_files)
+
+        st.divider()
+
+        st.subheader("⚙️ General Settings")
+        show_filenames = st.checkbox('Show Filenames', value=False, help="Display the filename above each plot when comparing multiple files." if has_files else "⚠️ Please upload a residual file first to enable this setting.", disabled=not has_files)
 
     if files:
         # Parse files once and cache results to reduce redundant file reading
