@@ -284,12 +284,19 @@ def main() -> None:
                 st.caption(f"Final Convergence (Iteration {item['data'].index[-1]})")
 
                 # Create a row of metrics for the last iteration
-                cols = st.columns(len(item['data'].columns))
+                # 🎨 Palette Improvement: Limit columns per row to prevent text truncation
+                # Wrapping dynamically generated columns ensures readability regardless of how many variables exist
+                max_cols_per_row = 4
+                num_vars = len(item['data'].columns)
                 last_row = item['data'].iloc[-1]
-                for col_idx, col_name in enumerate(item['data'].columns):
-                    with cols[col_idx]:
-                        val = last_row[col_name]
-                        st.metric(label=col_name, value=f"{val:.2e}")
+
+                for i in range(0, num_vars, max_cols_per_row):
+                    # Create a new row of columns, taking the remaining variables up to max_cols_per_row
+                    cols = st.columns(min(max_cols_per_row, num_vars - i))
+                    for j, col_name in enumerate(item['data'].columns[i:i + max_cols_per_row]):
+                        with cols[j]:
+                            val = last_row[col_name]
+                            st.metric(label=col_name, value=f"{val:.2e}")
 
                 st.caption("Raw Dataset")
 
