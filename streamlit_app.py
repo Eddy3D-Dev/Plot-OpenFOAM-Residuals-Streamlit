@@ -61,6 +61,19 @@ def create_altair_plot(data: pd.DataFrame) -> alt.Chart:
     return chart
 
 
+# ⚡ Bolt Optimization: Cache Altair JSON serialization.
+# Expected Performance Impact:
+# Streamlit inherently calls `chart.to_dict()` on Altair charts during rendering.
+# This serializes the entire backend DataFrame to JSON, an O(N) operation that takes ~1+ seconds
+# for 100k+ rows, blocking the main thread on EVERY single UI interaction (e.g. toggling a checkbox).
+# By pre-evaluating `to_dict()` inside `@st.cache_data`, we bypass this redundant serialization entirely.
+# We use `_data` to bypass expensive Streamlit hashing, using `file_id` for cache invalidation.
+@st.cache_data
+def get_cached_altair_dict(_data: pd.DataFrame, file_id: str) -> dict:
+    chart = create_altair_plot(_data)
+    return chart.to_dict()
+
+
 # ⚡ Bolt Optimization: Cache Matplotlib rendering using an image buffer and bypass DataFrame hashing.
 # Expected Performance Impact:
 # Generating Matplotlib figures and rendering them blocks the main thread on every app rerun.
@@ -225,8 +238,10 @@ def main() -> None:
                     st.divider()
                 if show_filenames:
                     st.subheader(f"File: {item['name']}")
-                chart = create_altair_plot(item['data'])
-                st.altair_chart(chart, use_container_width=True)
+
+                # ⚡ Bolt Optimization: Fetch the cached serialized dictionary instead of raw chart
+                chart_dict = get_cached_altair_dict(item['data'], item['file_id'])
+                st.vega_lite_chart(chart_dict, use_container_width=True)
 
         # Matplotlib plots
         with tab2:
