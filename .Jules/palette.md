@@ -40,3 +40,7 @@
 ## 2026-03-14 - Data Summarization & Formatting in Tables
 **Learning:** Presenting a raw, massive dataset (like OpenFOAM residuals) directly in a table is overwhelming and unhelpful for the user's primary goal, which is usually assessing the final convergence state. Users are forced to scroll past thousands of rows to find the only information they care about. Additionally, raw floating-point numbers often display poorly without consistent formatting.
 **Action:** Always provide a high-level summary (e.g., using `st.metric` cards) of the most important data points (like the final iteration values) *above* the raw data table. Furthermore, use tools like `st.column_config` to enforce consistent, readable formatting (e.g., scientific notation `%.4e` for residuals) across the entire dataframe to improve scannability and professional polish.
+
+## 2024-03-24 - Responsive Grid Wrapping for Dynamic Content
+**Learning:** Generating dynamic horizontal columns (like `st.columns(len(data.columns))`) without a maximum width constraint creates severe layout problems when user data contains many items. In Streamlit, this causes text inside components like `st.metric` to become horizontally squished and truncated (e.g., "1.23..."), rendering the data unreadable.
+**Action:** Always implement explicit wrapping for dynamically generated grid layouts. Group items into chunks with a sane maximum (e.g., 4 columns per row) to ensure consistent readability regardless of how many variables the user provides.
