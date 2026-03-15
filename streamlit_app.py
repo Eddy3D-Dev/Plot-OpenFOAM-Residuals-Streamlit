@@ -276,7 +276,30 @@ def main() -> None:
                     st.divider()
                 if show_filenames:
                     st.subheader(f"File: {item['name']}")
-                st.dataframe(item['data'], use_container_width=True)
+
+                # 🎨 Palette Improvement: Final Convergence Summary & Data Formatting
+                # Providing a quick summary of the final iteration values helps users instantly
+                # assess convergence without scrolling to the bottom of a massive table.
+                # Formatting the dataframe columns to scientific notation improves readability.
+                st.caption(f"Final Convergence (Iteration {item['data'].index[-1]})")
+
+                # Create a row of metrics for the last iteration
+                cols = st.columns(len(item['data'].columns))
+                last_row = item['data'].iloc[-1]
+                for col_idx, col_name in enumerate(item['data'].columns):
+                    with cols[col_idx]:
+                        val = last_row[col_name]
+                        st.metric(label=col_name, value=f"{val:.2e}")
+
+                st.caption("Raw Dataset")
+
+                # Format all numerical columns to scientific notation
+                column_config = {
+                    col: st.column_config.NumberColumn(format="%.4e")
+                    for col in item['data'].columns
+                }
+
+                st.dataframe(item['data'], use_container_width=True, column_config=column_config)
     else:
         st.info("👋 Welcome! Please upload your `residual.dat` files using the uploader above to get started.")
 
