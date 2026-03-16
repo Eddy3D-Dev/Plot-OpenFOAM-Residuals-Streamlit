@@ -44,3 +44,7 @@
 ## 2024-03-24 - Responsive Grid Wrapping for Dynamic Content
 **Learning:** Generating dynamic horizontal columns (like `st.columns(len(data.columns))`) without a maximum width constraint creates severe layout problems when user data contains many items. In Streamlit, this causes text inside components like `st.metric` to become horizontally squished and truncated (e.g., "1.23..."), rendering the data unreadable.
 **Action:** Always implement explicit wrapping for dynamically generated grid layouts. Group items into chunks with a sane maximum (e.g., 4 columns per row) to ensure consistent readability regardless of how many variables the user provides.
+
+## 2026-03-24 - Contextualizing Isolated Numbers via Baselines
+**Learning:** Displaying raw final values (e.g., in `st.metric`) lacks context for users trying to assess convergence progress, as they have to manually mentally compare the final value to their initial expectations.
+**Action:** Always provide context for isolated numbers by using features like `delta` in `st.metric` to explicitly show the relative change (e.g., order of magnitude drop) from a sensible baseline (like the first iteration). Add a `help` tooltip to ensure the baseline metric is clearly understood by the user.

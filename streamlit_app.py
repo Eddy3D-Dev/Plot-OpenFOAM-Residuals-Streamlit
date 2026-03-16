@@ -286,9 +286,11 @@ def main() -> None:
                 # Create a row of metrics for the last iteration
                 # 🎨 Palette Improvement: Limit columns per row to prevent text truncation
                 # Wrapping dynamically generated columns ensures readability regardless of how many variables exist
+                # Also adding delta to show convergence progress compared to the first iteration.
                 max_cols_per_row = 4
                 num_vars = len(item['data'].columns)
                 last_row = item['data'].iloc[-1]
+                first_row = item['data'].iloc[0]
 
                 for i in range(0, num_vars, max_cols_per_row):
                     # Create a new row of columns, taking the remaining variables up to max_cols_per_row
@@ -296,7 +298,19 @@ def main() -> None:
                     for j, col_name in enumerate(item['data'].columns[i:i + max_cols_per_row]):
                         with cols[j]:
                             val = last_row[col_name]
-                            st.metric(label=col_name, value=f"{val:.2e}")
+                            first_val = first_row[col_name]
+
+                            # Calculate the magnitude drop in log scale
+                            # Using max(val, 1e-20) to prevent log10(0) if residuals hit exactly 0
+                            mag_drop = np.log10(max(val, 1e-300)) - np.log10(max(first_val, 1e-300))
+
+                            st.metric(
+                                label=col_name,
+                                value=f"{val:.2e}",
+                                delta=f"{mag_drop:.1f} log",
+                                delta_color="inverse",
+                                help="Change in orders of magnitude since the first iteration."
+                            )
 
                 st.caption("Raw Dataset")
 
