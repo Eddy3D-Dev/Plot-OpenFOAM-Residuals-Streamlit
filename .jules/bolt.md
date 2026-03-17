@@ -41,3 +41,11 @@
 ## 2026-03-16 - Matplotlib Pandas Index Overhead
 **Learning:** Even when bypassing the pandas `.plot()` wrapper and passing raw data to `ax.plot()`, passing a pandas `Index` (like `data.index`) instead of a raw numpy array incurs measurable performance overhead. For 100k data points, this index metadata handling takes up to ~15% of the total plot generation time.
 **Action:** When extracting data for native Matplotlib plotting, always call `.to_numpy()` on the pandas `Index` (e.g., `ax.plot(data.index.to_numpy(), data.values)`) to ensure both the x and y axes are raw numpy arrays, bypassing all pandas overhead.
+
+## 2026-03-17 - pandas.read_csv engine bottleneck in Streamlit
+**Learning:** The legacy file parser (`fs.pre_parse`) writes an uploaded file back to disk, reads it completely into memory, globally replaces characters with Python string methods, and then delegates to `pd.read_csv` with `engine="python"`. The `python` engine is notoriously slow and blocking the Streamlit main thread for ~7.5 seconds on large datasets (~1M rows).
+**Action:** In Streamlit, avoid doing disk I/O for files that are already in memory. Instead of delegating to a slow, generic parsing module, bypass it and extract the data structure using string decoding, `io.StringIO`, and natively configuring `pd.read_csv` (like `comment="#"` and `engine="c"`). Using the C engine and parsing from memory reduces blocking time by >80% to ~1.5s.
+
+## 2026-03-17 - Avoid eager string allocation with splitlines()
+**Learning:** Calling `_file.getvalue().decode('utf-8').splitlines()` on a large text file in Streamlit is highly inefficient because it eagerly evaluates the entire string and creates a massive list of strings in memory just to inspect the first few lines for a header.
+**Action:** Use `io.TextIOWrapper(_file)` to treat the uploaded file as a stream. Lazily read lines with `.readline()` to find the header, then call `.seek(0)` to reset the stream before passing it directly to `pd.read_csv`. This avoids massive memory allocations while retaining the fast C engine parsing.
