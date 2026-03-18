@@ -1,6 +1,7 @@
 import io
 import math
 import tempfile
+import traceback
 from pathlib import Path
 
 import altair as alt
@@ -218,6 +219,8 @@ def main() -> None:
                     parsed_files.append({'name': file.name, 'data': data, 'file_id': file.file_id})
                 except Exception:
                     st.error(f"Error parsing '{file.name}'. Please ensure it is a valid OpenFOAM residual file.")
+                    with st.expander("View error details"):
+                        st.code(traceback.format_exc(), language="text")
 
         if not parsed_files:
             return
@@ -326,6 +329,10 @@ def main() -> None:
                 st.dataframe(item['data'], use_container_width=True, column_config=column_config)
     else:
         st.info("👋 Welcome! Please upload your `residual.dat` files using the uploader above to get started.")
+        st.markdown("### Example format:")
+        st.code("""# Time    Ux        Uy        Uz        p
+1       1.0e-2    2.0e-2    3.0e-2    4.0e-2
+2       5.0e-3    6.0e-3    7.0e-3    8.0e-3""", language="text")
 
 
 if __name__ == "__main__":

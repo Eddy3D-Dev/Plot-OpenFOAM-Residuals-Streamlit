@@ -48,3 +48,7 @@
 ## 2026-03-24 - Contextualizing Isolated Numbers via Baselines
 **Learning:** Displaying raw final values (e.g., in `st.metric`) lacks context for users trying to assess convergence progress, as they have to manually mentally compare the final value to their initial expectations.
 **Action:** Always provide context for isolated numbers by using features like `delta` in `st.metric` to explicitly show the relative change (e.g., order of magnitude drop) from a sensible baseline (like the first iteration). Add a `help` tooltip to ensure the baseline metric is clearly understood by the user.
+
+## 2026-03-24 - Enhancing Empty States and Error Messages
+**Learning:** Dead-end empty states and generic error messages provide poor user experiences. Users don't know what format to use for file uploads, and when errors occur, generic messages don't help them self-correct.
+**Action:** Always enhance empty states by showing explicit examples (e.g., using `st.code`) of expected file formats. For error notifications, always surface raw exception traces inside an `st.expander` to help users understand what went wrong without cluttering the main UI.
