@@ -5,7 +5,7 @@ A Streamlit app for visualizing OpenFOAM residual `.dat` and `.log` files.
 ## Features
 
 - Interactive residual view (`Interactive` tab)
-- Static residual view (`Static` tab) with renderer selection (`Altair` or `Matplotlib`)
+- Static residual view (`Static` tab) with Matplotlib
 - Raw table inspection (`Data` tab)
 - Multi-file upload and side-by-side comparison
 - Height controls for interactive and static plots

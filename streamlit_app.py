@@ -338,15 +338,7 @@ def main() -> None:
             )
 
     with tab_static:
-        static_controls = st.columns([1, 1, 2])
-        static_renderer = static_controls[0].selectbox(
-            "Renderer",
-            options=["Matplotlib", "Altair"],
-            index=0,
-        )
-        show_grid = False
-        if static_renderer == "Matplotlib":
-            show_grid = static_controls[1].checkbox("Show grid", value=True)
+        show_grid = st.checkbox("Show grid", value=True)
 
         for item in parsed_items:
             name = str(item["name"])
@@ -354,23 +346,16 @@ def main() -> None:
             data = item["data"]
             if show_filenames:
                 st.subheader(name)
-            if static_renderer == "Matplotlib":
-                figure = build_matplotlib_figure(
-                    data,
-                    height_pixels=static_height,
-                    show_grid=show_grid,
-                )
-                if figure is None:
-                    st.warning(f"{name}: no positive residual values to chart.")
-                else:
-                    st.pyplot(figure)
-                    plt.close(figure)
+            figure = build_matplotlib_figure(
+                data,
+                height_pixels=static_height,
+                show_grid=show_grid,
+            )
+            if figure is None:
+                st.warning(f"{name}: no positive residual values to chart.")
             else:
-                chart = build_chart(data, interactive=False, height=static_height)
-                if chart is None:
-                    st.warning(f"{name}: no positive residual values to chart.")
-                else:
-                    st.altair_chart(chart, width="stretch")
+                st.pyplot(figure)
+                plt.close(figure)
             csv_bytes = data.to_csv().encode("utf-8")
             st.download_button(
                 f"Download CSV ({name})",
