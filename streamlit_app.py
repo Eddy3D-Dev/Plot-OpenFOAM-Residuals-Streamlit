@@ -515,7 +515,33 @@ def main() -> None:
             data = item["data"]
             if show_filenames:
                 st.subheader(name)
-            st.dataframe(data.reset_index(), width="stretch", height=360)
+
+            st.markdown("**Final Convergence Summary**")
+            valid_cols = [c for c in data.columns if not data[c].dropna().empty]
+
+            for i in range(0, len(valid_cols), 4):
+                cols = st.columns(4)
+                for j, col in enumerate(valid_cols[i:i+4]):
+                    clean_series = data[col].dropna()
+                    first_val = float(clean_series.iloc[0])
+                    final_val = float(clean_series.iloc[-1])
+                    diff = final_val - first_val
+                    with cols[j]:
+                        st.metric(
+                            label=col,
+                            value=f"{final_val:.4e}",
+                            delta=f"{diff:.2e}",
+                            delta_color="inverse",
+                            help=f"Change from initial iteration ({first_val:.4e})",
+                        )
+
+            col_config = {c: st.column_config.NumberColumn(format="%.4e") for c in valid_cols}
+            st.dataframe(
+                data.reset_index(),
+                width="stretch",
+                height=360,
+                column_config=col_config,
+            )
             csv_buffer = io.StringIO()
             data.to_csv(csv_buffer)
             st.download_button(
