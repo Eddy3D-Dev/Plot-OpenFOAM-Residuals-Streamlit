@@ -1,43 +1,44 @@
 # Plot OpenFOAM Residuals
 
-A modern single-page web app for visualizing OpenFOAM residual `.dat` and `.log` files, deployable directly on GitHub Pages.
+A Streamlit app for visualizing OpenFOAM residual `.dat` and `.log` files.
 
 ## Features
 
-- Interactive residual view (`Altair` tab equivalent)
-- Static residual view (`Matplotlib` tab equivalent)
-- Raw table inspection (`Dataframe` tab equivalent)
+- Interactive residual view (`Interactive` tab)
+- Static residual view (`Static` tab) with renderer selection (`Altair` or `Matplotlib`)
+- Raw table inspection (`Data` tab)
 - Multi-file upload and side-by-side comparison
-- Figure width/height controls for static plots
+- Height controls for interactive and static plots
 - Optional filename display
 - Log-scale residual plotting
-- Fully client-side parsing (files never leave the browser)
+- CSV download per uploaded file
+- Server-side parsing in Streamlit
 
 ## Project Structure
 
-- `web/index.html`: App shell
-- `web/styles.css`: UI styling
-- `web/app.js`: File parsing and plotting logic
-- `.github/workflows/deploy-pages.yml`: GitHub Pages deployment workflow
+- `streamlit_app.py`: Main Streamlit application
+- `pyproject.toml`: Project metadata and dependencies
+- `uv.lock`: Locked dependency set for `uv`
 
-## Local Preview
+## Run Locally
 
-Serve the `web` directory with any static server.
+Install dependencies with `uv` and run Streamlit:
 
 ```bash
-python3 -m http.server 8000 --directory web
+uv sync
+uv run streamlit run streamlit_app.py
 ```
 
-Then open `http://localhost:8000`.
+Then open the local URL printed by Streamlit (usually `http://localhost:8501`).
 
-## Deploy to GitHub Pages
+## Deploy to Streamlit Cloud
 
-1. Push to your default branch (workflow is configured for `main`).
-2. In GitHub repo settings, enable Pages with source set to GitHub Actions.
-3. The workflow in `.github/workflows/deploy-pages.yml` will publish the `web/` folder.
+1. Connect this repository in Streamlit Cloud.
+2. Set main file path to `streamlit_app.py`.
+3. Streamlit Cloud will install dependencies from `pyproject.toml`/`uv.lock`.
 
 ## How to Use
 
 1. Upload one or more OpenFOAM residual `.dat` or `.log` files.
-2. Configure static figure width/height and optionally enable filename labels.
-3. Switch between `Altair`, `Matplotlib`, and `Dataframe` tabs.
+2. Configure optional display and plotting controls.
+3. Switch between `Interactive`, `Static`, and `Data` tabs.
