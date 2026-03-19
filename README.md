@@ -1,49 +1,43 @@
 # Plot OpenFOAM Residuals
 
-A Streamlit application to visualize OpenFOAM residuals from `residual.dat` files.
-
-[Demo Application](https://bit.ly/plot-of-residuals)
+A modern single-page web app for visualizing OpenFOAM residual `.dat` and `.log` files, deployable directly on GitHub Pages.
 
 ## Features
 
-- **Interactive Plots**: Visualize residuals using Altair for interactive exploration.
-- **Static Plots**: Generate high-quality static plots using Matplotlib.
-- **Data Inspection**: View raw data in a tabular format.
-- **Multiple Files**: Upload and compare multiple residual files simultaneously.
-- **Log Scale**: Automatically plots residuals on a logarithmic scale.
+- Interactive residual view (`Altair` tab equivalent)
+- Static residual view (`Matplotlib` tab equivalent)
+- Raw table inspection (`Dataframe` tab equivalent)
+- Multi-file upload and side-by-side comparison
+- Figure width/height controls for static plots
+- Optional filename display
+- Log-scale residual plotting
+- Fully client-side parsing (files never leave the browser)
 
-## Installation
+## Project Structure
 
-This project uses `uv` for dependency management.
+- `web/index.html`: App shell
+- `web/styles.css`: UI styling
+- `web/app.js`: File parsing and plotting logic
+- `.github/workflows/deploy-pages.yml`: GitHub Pages deployment workflow
 
-1.  **Install uv**:
-    ```bash
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    ```
+## Local Preview
 
-2.  **Clone the repository**:
-    ```bash
-    git clone <repository-url>
-    cd Plot-OpenFOAM-Residuals
-    ```
-
-3.  **Install dependencies**:
-    ```bash
-    uv sync
-    ```
-
-## Usage
-
-Run the Streamlit application:
+Serve the `web` directory with any static server.
 
 ```bash
-uv run streamlit run streamlit_app.py
+python3 -m http.server 8000 --directory web
 ```
 
-Open your browser and navigate to the URL provided in the terminal (usually `http://localhost:8501`).
+Then open `http://localhost:8000`.
+
+## Deploy to GitHub Pages
+
+1. Push to your default branch (workflow is configured for `main`).
+2. In GitHub repo settings, enable Pages with source set to GitHub Actions.
+3. The workflow in `.github/workflows/deploy-pages.yml` will publish the `web/` folder.
 
 ## How to Use
 
-1.  **Upload Files**: Drag and drop your `residual.dat` files into the file uploader. These files are typically found in the `postProcessing` directory of your OpenFOAM case.
-2.  **Adjust Settings**: Use the sidebar to change the figure width and height for Matplotlib plots.
-3.  **Explore**: Switch between the "Altair", "Matplotlib", and "Dataframe" tabs to view the data in different formats.
+1. Upload one or more OpenFOAM residual `.dat` or `.log` files.
+2. Configure static figure width/height and optionally enable filename labels.
+3. Switch between `Altair`, `Matplotlib`, and `Dataframe` tabs.

@@ -1,43 +1,7 @@
-## 2026-03-02 - Client-side Data Melting with Altair
-**Learning:** In Streamlit applications using Altair, reshaping large DataFrames on the Python backend using `pandas.melt()` is very expensive. It blocks the main thread, uses significant backend memory, and generates a massive JSON payload (6x larger for 6 variables) that has to be serialized and sent to the browser.
-**Action:** Use Altair's `.transform_fold()` to push the reshaping operation to the Vega-Lite engine on the client side. This allows the backend to send the compact, wide DataFrame, drastically reducing CPU time, memory footprint, and network latency.
+## 2026-03-01 - Redundant File Parsing in Streamlit Tabs
+**Learning:** In Streamlit, uploading a file and rendering it across multiple tabs can lead to redundant I/O and parsing operations (`O(N*T)` where N is files and T is tabs). Previously, `fs.pre_parse` was called three times per uploaded file (once for Altair, once for Matplotlib, once for Dataframe).
+**Action:** Use `@st.cache_data` on a wrapper function that handles the file reading and parsing. Parse the file once upon upload, store the result in memory (or caching layer), and reuse the parsed `pd.DataFrame` across all UI components (tabs) to reduce disk I/O and CPU overhead.
 
-## 2026-03-02 - Streamlit Hashing Overhead for Large Uploaded Files
-**Learning:** Passing a large `bytes` object (like `file.getvalue()`) directly as an argument to a `@st.cache_data` decorated function causes Streamlit to hash the entire payload on *every single app rerun* to check if the cache is still valid. For large files (e.g., 50MB+), this hashing overhead can take over a second, severely blocking the UI main thread during interactions.
-**Action:** When caching operations on uploaded files, prefix the `bytes` argument with an underscore (e.g., `_file_content`) to instruct Streamlit to ignore it when generating the cache key. Instead, pass a lightweight, unique identifier like `file.file_id` as a regular argument to properly manage cache invalidation without the hashing overhead.
-
-## 2026-03-04 - Matplotlib DPI Blocking Streamlit Main Thread
-**Learning:** Hardcoding a very high DPI (e.g., `plt.rcParams['figure.dpi'] = 600`) for Matplotlib plots in a Streamlit app severely degrades performance. Rendering a high-DPI plot blocks the main thread (taking 5+ seconds for moderately sized datasets) and generates massive image payloads that must be serialized and sent to the client. This is especially problematic in Streamlit where user interactions often trigger full script reruns.
-**Action:** Expose DPI as a user-configurable parameter in the UI with a sensible default (e.g., 100-150 DPI) for fast interactive exploration. Users can manually increase it only when they need a print-quality export.
-
-## 2026-03-05 - Data Visualization Bottlenecks in Streamlit
-**Learning:** Downsampling massive datasets simply for visualization is not a universally acceptable optimization. In some specific engineering contexts, plotting every data point might be desired, and downsampling logic might be seen as unexpected data modification or loss of fidelity, even if the raw data is technically untouched.
-**Action:** Do not forcefully implement visualization downsampling on user datasets without explicit instruction.
-
-## 2026-03-05 - Safe Matplotlib Caching in Streamlit
-**Learning:** Matplotlib `Figure` objects are stateful and not thread-safe. Caching them directly using `@st.cache_resource` causes race conditions across user sessions. Caching them with `@st.cache_data` causes pickling errors. Additionally, hashing large DataFrame inputs to determine cache validity is extremely slow.
-**Action:** To safely cache Matplotlib plots, render the figure to a `BytesIO` buffer, close the figure to prevent memory leaks, and return the PNG bytes. Cache this function with `@st.cache_data`. Use an underscore prefix for the DataFrame argument (e.g., `_data`) to bypass expensive hashing, and pass a lightweight identifier (e.g., `file_id`) to manage cache invalidation correctly. Finally, render the cached bytes using `st.image()` instead of `st.pyplot()`.
-
-## 2026-03-05 - Inefficient Pandas Reductions in Streamlit
-**Learning:** Using chained pandas reductions like `data.min().min()` on large DataFrames is extremely inefficient (taking ~7ms for 1M rows) because pandas computes the minimum per column, aligns indices, creates a new Series, and then computes the minimum of that Series. When a simple global minimum is needed, this overhead is wasted.
-**Action:** Use `float(np.nanmin(data.values))` (or `data.to_numpy()`) to bypass pandas metadata handling entirely, reducing the calculation time by over 15x (to ~0.4ms) and preventing redundant CPU blocking before generating Matplotlib plots.
-
-## 2026-03-05 - O(1) Max on Monotonically Increasing Indices
-**Learning:** Calling `data.index.max()` performs an O(N) scan over the entire index. In contexts like OpenFOAM residuals where the time index (iterations) is strictly monotonically increasing, this is unnecessary.
-**Action:** Use `data.index[-1]` for instant O(1) access to the maximum value, significantly speeding up bounds calculations before plotting.
-
-## 2026-03-05 - Streamlit Cache Returning Duplication Overhead
-**Learning:** Avoid returning multiple large data structures (such as a DataFrame and its `.reset_index()` variant or a separate index Series) from a `@st.cache_data` function. Streamlit's caching mechanism serializes and stores deep copies of all returned values. Returning redundant or overlapping data structures unnecessarily doubles memory usage, serialization time, and deserialization overhead on cache hits, degrading app performance.
-**Action:** Return only the minimum necessary data structures from cached functions. If a derived structure (like an index or a melted version) is needed, extract it from the core data structure *after* retrieving it from the cache, provided the extraction is less expensive than the serialization overhead.
-
-## 2026-03-11 - Streamlit Hashing Overhead for Uploaded Files requires Lazy getvalue()
-**Learning:** Calling `.getvalue()` on a Streamlit `UploadedFile` before passing it to an `@st.cache_data` function triggers memory allocation and I/O for the entire file payload. Because Streamlit re-evaluates the entire script on every user interaction (like clicking a tab), this means the `.getvalue()` call executes redundantly, even on cache hits, causing a memory and CPU spike.
-**Action:** Pass the `UploadedFile` object itself prefixed with an underscore (e.g., `_file`) to the cached function instead of the bytes. Then, only call `_file.getvalue()` inside the function body so that the expensive memory allocation is truly deferred and only executes on cache misses.
-
-## 2026-03-13 - Pandas plotting wrapper overhead and thread-safety
-**Learning:** Using `data.plot(logy=True)` to plot a pandas DataFrame utilizes its internal wrapper, which adds considerable overhead (~60% slower on 1M rows) compared to extracting the values and plotting natively with Matplotlib. Furthermore, the previous implementation modified global `plt.rcParams` to configure `figsize` and `dpi`, which causes race conditions in a multi-user, multi-threaded environment like Streamlit.
-**Action:** Initialize figures directly with `fig, ax = plt.subplots(figsize=..., dpi=...)` to avoid mutating global Matplotlib state and pass the raw data explicitly `ax.plot(data.index, data.values)` to avoid pandas metadata parsing overhead.
-
-## 2026-03-16 - Matplotlib Pandas Index Overhead
-**Learning:** Even when bypassing the pandas `.plot()` wrapper and passing raw data to `ax.plot()`, passing a pandas `Index` (like `data.index`) instead of a raw numpy array incurs measurable performance overhead. For 100k data points, this index metadata handling takes up to ~15% of the total plot generation time.
-**Action:** When extracting data for native Matplotlib plotting, always call `.to_numpy()` on the pandas `Index` (e.g., `ax.plot(data.index.to_numpy(), data.values)`) to ensure both the x and y axes are raw numpy arrays, bypassing all pandas overhead.
+## 2026-03-14 - Cache Altair Serialization
+**Learning:** Streamlit implicitly calls `chart.to_dict()` on any `alt.Chart` object passed to `st.altair_chart` before sending the spec to the frontend. For large datasets, this recursive JSON serialization blocks the Python main thread for seconds on *every* UI rerun (e.g. checkbox toggles).
+**Action:** Extract the `.to_dict()` serialization into a `@st.cache_data` decorated function. Streamlit's `st.altair_chart` natively accepts the serialized Vega-Lite dict. Using an underscore on the dataframe argument (`_data`) bypasses hashing, ensuring serialization only occurs once.
