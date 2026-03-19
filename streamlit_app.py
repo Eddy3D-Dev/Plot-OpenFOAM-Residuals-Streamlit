@@ -262,7 +262,7 @@ def make_file_id(name: str, raw_bytes: bytes) -> str:
 
 
 def main() -> None:
-    st.set_page_config(page_title="Plot OpenFOAM Residuals", layout="wide")
+    st.set_page_config(page_title="Plot OpenFOAM Residuals")
     st.title("Plot OpenFOAM Residuals")
     st.caption("Upload OpenFOAM residual `.dat` or `.log` files.")
 
