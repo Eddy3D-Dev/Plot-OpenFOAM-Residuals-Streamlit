@@ -305,22 +305,14 @@ def main() -> None:
         return
 
     show_names_default = len(parsed_items) > 1
-    controls = st.columns([1, 1, 1, 1])
+    controls = st.columns([1, 1, 1])
     show_filenames = controls[0].checkbox(
         "Show filenames",
         value=show_names_default,
         disabled=show_names_default,
     )
     interactive_height = controls[1].slider("Interactive height", 240, 900, 420, 20)
-    static_renderer = controls[2].selectbox(
-        "Static renderer",
-        options=["Altair", "Matplotlib"],
-        index=0,
-    )
-    static_height = controls[3].slider("Static height", 240, 900, 360, 20)
-    show_grid = False
-    if static_renderer == "Matplotlib":
-        show_grid = st.checkbox("Show grid (Matplotlib)", value=True)
+    static_height = controls[2].slider("Static height", 240, 900, 360, 20)
 
     tab_interactive, tab_static, tab_table = st.tabs(["Interactive", "Static", "Data"])
 
@@ -346,6 +338,16 @@ def main() -> None:
             )
 
     with tab_static:
+        static_controls = st.columns([1, 1, 2])
+        static_renderer = static_controls[0].selectbox(
+            "Renderer",
+            options=["Matplotlib", "Altair"],
+            index=0,
+        )
+        show_grid = False
+        if static_renderer == "Matplotlib":
+            show_grid = static_controls[1].checkbox("Show grid", value=True)
+
         for item in parsed_items:
             name = str(item["name"])
             file_id = str(item["file_id"])
