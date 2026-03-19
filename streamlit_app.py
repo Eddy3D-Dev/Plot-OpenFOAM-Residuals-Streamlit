@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import io
 import re
+import zipfile
 from pathlib import Path
 
 import altair as alt
@@ -259,6 +260,33 @@ def build_matplotlib_figure(data: pd.DataFrame, *, height_pixels: int, show_grid
     return fig
 
 
+def figure_to_png_bytes(figure: plt.Figure, *, dpi: int = 200) -> bytes:
+    buffer = io.BytesIO()
+    figure.savefig(buffer, format="png", dpi=dpi, bbox_inches="tight")
+    return buffer.getvalue()
+
+
+def sanitize_stem(name: str) -> str:
+    stem = Path(name).stem
+    stem = re.sub(r"[^A-Za-z0-9._-]+", "_", stem).strip("._")
+    return stem or "plot"
+
+
+def build_images_zip(images: list[tuple[str, bytes]]) -> bytes:
+    buffer = io.BytesIO()
+    used_names: dict[str, int] = {}
+
+    with zipfile.ZipFile(buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for original_name, image_bytes in images:
+            base_name = f"{sanitize_stem(original_name)}_static"
+            index = used_names.get(base_name, 0)
+            used_names[base_name] = index + 1
+            suffix = f"_{index + 1}" if index else ""
+            archive.writestr(f"{base_name}{suffix}.png", image_bytes)
+
+    return buffer.getvalue()
+
+
 def make_file_id(name: str, raw_bytes: bytes) -> str:
     digest = hashlib.sha1(raw_bytes, usedforsecurity=False).hexdigest()[:12]
     return f"{name}-{digest}"
@@ -342,6 +370,7 @@ def main() -> None:
 
     with tab_static:
         show_grid = st.checkbox("Show grid", value=True)
+        static_images: list[tuple[str, bytes]] = []
 
         for item in parsed_items:
             name = str(item["name"])
@@ -357,6 +386,7 @@ def main() -> None:
             if figure is None:
                 st.warning(f"{name}: no positive residual values to chart.")
             else:
+                static_images.append((name, figure_to_png_bytes(figure)))
                 st.pyplot(figure, clear_figure=True)
             csv_bytes = data.to_csv().encode("utf-8")
             st.download_button(
@@ -365,6 +395,15 @@ def main() -> None:
                 file_name=f"{Path(name).stem}.csv",
                 mime="text/csv",
                 key=f"static_csv_{file_id}",
+            )
+
+        if static_images:
+            st.download_button(
+                "Export all static images (.zip)",
+                data=build_images_zip(static_images),
+                file_name="openfoam_residual_static_plots.zip",
+                mime="application/zip",
+                key="export_all_static_images_zip",
             )
 
     with tab_table:
