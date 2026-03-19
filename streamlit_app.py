@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 import altair as alt
+import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 
@@ -219,6 +220,37 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int) -> alt.Ch
     return chart
 
 
+def build_matplotlib_figure(data: pd.DataFrame, *, height_pixels: int, show_grid: bool) -> plt.Figure | None:
+    time_values = pd.to_numeric(data.index.to_series(), errors="coerce")
+    ordered_cols = [c for c in FEATURE_COLUMNS if c in data.columns]
+    ordered_cols.extend([c for c in data.columns if c not in ordered_cols])
+
+    fig_height = max(2.4, height_pixels / 100.0)
+    fig, ax = plt.subplots(figsize=(10, fig_height))
+    has_series = False
+
+    for column in ordered_cols:
+        residual = pd.to_numeric(data[column], errors="coerce")
+        mask = time_values.notna() & residual.notna() & (residual > 0)
+        if not mask.any():
+            continue
+        ax.plot(time_values[mask], residual[mask], label=column, linewidth=2)
+        has_series = True
+
+    if not has_series:
+        plt.close(fig)
+        return None
+
+    ax.set_xlabel("Iterations")
+    ax.set_ylabel("Residuals")
+    ax.set_yscale("log")
+    if show_grid:
+        ax.grid(True, which="both", linestyle="--", linewidth=0.5, alpha=0.4)
+    ax.legend(loc="best")
+    fig.tight_layout()
+    return fig
+
+
 def make_file_id(name: str, raw_bytes: bytes) -> str:
     digest = hashlib.sha1(raw_bytes, usedforsecurity=False).hexdigest()[:12]
     return f"{name}-{digest}"
@@ -268,14 +300,22 @@ def main() -> None:
         return
 
     show_names_default = len(parsed_items) > 1
-    controls = st.columns([1, 1, 1])
+    controls = st.columns([1, 1, 1, 1])
     show_filenames = controls[0].checkbox(
         "Show filenames",
         value=show_names_default,
         disabled=show_names_default,
     )
     interactive_height = controls[1].slider("Interactive height", 240, 900, 420, 20)
-    static_height = controls[2].slider("Static height", 240, 900, 360, 20)
+    static_renderer = controls[2].selectbox(
+        "Static renderer",
+        options=["Altair", "Matplotlib"],
+        index=0,
+    )
+    static_height = controls[3].slider("Static height", 240, 900, 360, 20)
+    show_grid = False
+    if static_renderer == "Matplotlib":
+        show_grid = st.checkbox("Show grid (Matplotlib)", value=True)
 
     tab_interactive, tab_static, tab_table = st.tabs(["Interactive", "Static", "Data"])
 
@@ -307,11 +347,23 @@ def main() -> None:
             data = item["data"]
             if show_filenames:
                 st.subheader(name)
-            chart = build_chart(data, interactive=False, height=static_height)
-            if chart is None:
-                st.warning(f"{name}: no positive residual values to chart.")
+            if static_renderer == "Matplotlib":
+                figure = build_matplotlib_figure(
+                    data,
+                    height_pixels=static_height,
+                    show_grid=show_grid,
+                )
+                if figure is None:
+                    st.warning(f"{name}: no positive residual values to chart.")
+                else:
+                    st.pyplot(figure)
+                    plt.close(figure)
             else:
-                st.altair_chart(chart, width="stretch")
+                chart = build_chart(data, interactive=False, height=static_height)
+                if chart is None:
+                    st.warning(f"{name}: no positive residual values to chart.")
+                else:
+                    st.altair_chart(chart, width="stretch")
             csv_bytes = data.to_csv().encode("utf-8")
             st.download_button(
                 f"Download CSV ({name})",
