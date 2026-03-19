@@ -354,8 +354,7 @@ def main() -> None:
             if figure is None:
                 st.warning(f"{name}: no positive residual values to chart.")
             else:
-                st.pyplot(figure)
-                plt.close(figure)
+                st.pyplot(figure, clear_figure=True)
             csv_bytes = data.to_csv().encode("utf-8")
             st.download_button(
                 f"Download CSV ({name})",
