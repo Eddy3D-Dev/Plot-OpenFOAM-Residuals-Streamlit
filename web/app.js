@@ -206,8 +206,9 @@ function parseResidualDat(rawText) {
 }
 
 function parseOpenFoamLog(rawText) {
-    const timePattern = /(?:^|\s)Time\s*=\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)/;
+    const timePattern = /^\s*Time\s*=\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*$/;
     const solvePattern = /Solving for\s+([^,]+),\s*Initial residual\s*=\s*([^,]+),/;
+    const hasExplicitTimeMarkers = /(?:^|\n)\s*Time\s*=\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?\s*(?:\n|$)/m.test(rawText);
     const rows = [];
     const indices = [];
     let currentRow = null;
@@ -256,6 +257,9 @@ function parseOpenFoamLog(rawText) {
         }
 
         if (Object.prototype.hasOwnProperty.call(currentRow, field)) {
+            if (hasExplicitTimeMarkers) {
+                continue;
+            }
             flushCurrentRow();
             currentRow = {};
             currentIndex = null;

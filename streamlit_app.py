@@ -12,7 +12,7 @@ import streamlit as st
 
 FEATURE_COLUMNS = ["Ux", "Uy", "Uz", "p", "epsilon", "k"]
 TIME_RE = re.compile(
-    r"(?:^|\s)Time\s*=\s*(?P<time>[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)"
+    r"^\s*Time\s*=\s*(?P<time>[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*$"
 )
 SOLVE_RE = re.compile(
     r"Solving for (?P<field>[^,]+),\s*Initial residual\s*=\s*(?P<residual>[^,]+),"
@@ -85,6 +85,7 @@ def parse_openfoam_log(raw_text: str) -> pd.DataFrame:
     current_row: dict[str, float] | None = None
     current_index: float | None = None
     fallback_index = 0
+    has_explicit_time_markers = any(TIME_RE.match(line) for line in raw_text.splitlines())
 
     def flush_current_row() -> None:
         nonlocal fallback_index
@@ -98,7 +99,7 @@ def parse_openfoam_log(raw_text: str) -> pd.DataFrame:
             fallback_index += 1
 
     for line in raw_text.splitlines():
-        time_match = TIME_RE.search(line)
+        time_match = TIME_RE.match(line)
         if time_match:
             flush_current_row()
             current_row = {}
@@ -120,6 +121,10 @@ def parse_openfoam_log(raw_text: str) -> pd.DataFrame:
             continue
 
         if field in current_row:
+            if has_explicit_time_markers:
+                # Keep one row per explicit time step; ignore duplicate field solves.
+                continue
+            # Logs without explicit time markers: repeated fields imply new row.
             flush_current_row()
             current_row = {}
             current_index = None
