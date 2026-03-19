@@ -1,7 +1,7 @@
 [project]
 name = "plot-openfoam-residuals"
 version = "0.1.0"
-description = "Add your description here"
+description = "Streamlit app for plotting OpenFOAM residual .dat and .log files with interactive Altair and static Matplotlib views."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

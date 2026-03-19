@@ -86,6 +86,7 @@ def parse_openfoam_log(raw_text: str) -> pd.DataFrame:
     current_index: float | None = None
     fallback_index = 0
     has_explicit_time_markers = any(TIME_RE.match(line) for line in raw_text.splitlines())
+    explicit_step_index = 0
 
     def flush_current_row() -> None:
         nonlocal fallback_index
@@ -103,8 +104,10 @@ def parse_openfoam_log(raw_text: str) -> pd.DataFrame:
         if time_match:
             flush_current_row()
             current_row = {}
-            parsed_time = parse_numeric(time_match.group("time"))
-            current_index = float(parsed_time) if pd.notna(parsed_time) else None
+            # Use monotonic step index for .log parsing to match "Iterations"
+            # axis semantics and avoid artifacts when simulation time repeats.
+            current_index = float(explicit_step_index)
+            explicit_step_index += 1
             continue
 
         match = SOLVE_RE.search(line)
