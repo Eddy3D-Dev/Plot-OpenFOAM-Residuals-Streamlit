@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import json
 import re
 import zipfile
 from pathlib import Path
@@ -10,8 +11,17 @@ import altair as alt
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 FEATURE_COLUMNS = ["Ux", "Uy", "Uz", "p", "epsilon", "k"]
+SEO_TITLE = "OpenFOAM Residual Plotter - Plot .dat and .log Files Online"
+SEO_DESCRIPTION = (
+    "OpenFOAM residual plotter built with Streamlit. Upload .dat and .log files to "
+    "visualize CFD convergence with interactive Altair charts, static Matplotlib plots, "
+    "tables, CSV export, and image ZIP export."
+)
+SEO_CANONICAL_URL = "https://plot-openfoam-residuals.streamlit.app/"
+SEO_IMAGE_URL = "https://plot-openfoam-residuals.streamlit.app/app/static/favicon.png"
 TIME_RE = re.compile(
     r"^\s*Time\s*=\s*(?P<time>[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*$"
 )
@@ -287,15 +297,107 @@ def build_images_zip(images: list[tuple[str, bytes]]) -> bytes:
     return buffer.getvalue()
 
 
+def inject_seo_metadata() -> None:
+    json_ld = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "OpenFOAM Residual Plotter",
+        "url": SEO_CANONICAL_URL,
+        "applicationCategory": "EngineeringApplication",
+        "operatingSystem": "Any",
+        "description": SEO_DESCRIPTION,
+        "featureList": [
+            "OpenFOAM .dat parser",
+            "OpenFOAM .log parser",
+            "Interactive Altair residual charts",
+            "Static Matplotlib residual charts",
+            "CSV export",
+            "ZIP image export",
+        ],
+    }
+
+    payload = {
+        "title": SEO_TITLE,
+        "description": SEO_DESCRIPTION,
+        "canonical": SEO_CANONICAL_URL,
+        "image": SEO_IMAGE_URL,
+        "jsonLd": json_ld,
+    }
+
+    script = f"""
+    <script>
+    (function() {{
+      const payload = {json.dumps(payload)};
+      const doc = (window.parent && window.parent.document) ? window.parent.document : document;
+
+      function upsertMeta(attr, key, content) {{
+        if (!content) return;
+        let el = doc.head.querySelector(`meta[${{attr}}="${{key}}"]`);
+        if (!el) {{
+          el = doc.createElement("meta");
+          el.setAttribute(attr, key);
+          doc.head.appendChild(el);
+        }}
+        el.setAttribute("content", content);
+      }}
+
+      doc.title = payload.title;
+      upsertMeta("name", "description", payload.description);
+      upsertMeta("name", "keywords", "OpenFOAM residual plotter, OpenFOAM .log parser, OpenFOAM .dat parser, CFD convergence plotting, Streamlit OpenFOAM");
+      upsertMeta("name", "robots", "index, follow");
+      upsertMeta("property", "og:type", "website");
+      upsertMeta("property", "og:title", payload.title);
+      upsertMeta("property", "og:description", payload.description);
+      upsertMeta("property", "og:url", payload.canonical);
+      upsertMeta("property", "og:image", payload.image);
+      upsertMeta("name", "twitter:card", "summary_large_image");
+      upsertMeta("name", "twitter:title", payload.title);
+      upsertMeta("name", "twitter:description", payload.description);
+      upsertMeta("name", "twitter:image", payload.image);
+
+      let canonical = doc.head.querySelector('link[rel="canonical"]');
+      if (!canonical) {{
+        canonical = doc.createElement("link");
+        canonical.setAttribute("rel", "canonical");
+        doc.head.appendChild(canonical);
+      }}
+      canonical.setAttribute("href", payload.canonical);
+
+      let ld = doc.head.querySelector('script[type="application/ld+json"][data-pofr-seo="1"]');
+      if (!ld) {{
+        ld = doc.createElement("script");
+        ld.type = "application/ld+json";
+        ld.setAttribute("data-pofr-seo", "1");
+        doc.head.appendChild(ld);
+      }}
+      ld.textContent = JSON.stringify(payload.jsonLd);
+    }})();
+    </script>
+    """
+
+    components.html(script, height=0, width=0)
+
+
 def make_file_id(name: str, raw_bytes: bytes) -> str:
     digest = hashlib.sha1(raw_bytes, usedforsecurity=False).hexdigest()[:12]
     return f"{name}-{digest}"
 
 
 def main() -> None:
-    st.set_page_config(page_title="Plot OpenFOAM Residuals")
+    st.set_page_config(page_title=SEO_TITLE, page_icon="📈")
+    inject_seo_metadata()
     st.title("Plot OpenFOAM Residuals")
-    st.caption("Upload OpenFOAM residual `.dat` or `.log` files.")
+    st.caption(
+        "Upload OpenFOAM residual `.dat` and `.log` files to analyze CFD convergence "
+        "with interactive and static residual plots."
+    )
+    st.markdown(
+        """
+        This OpenFOAM residual plotter helps CFD engineers inspect solver convergence for
+        variables like `Ux`, `Uy`, `Uz`, `p`, `k`, and `epsilon`. Upload files, compare runs,
+        and export data or images for reports.
+        """
+    )
 
     uploaded_files = st.file_uploader(
         "Select files",
@@ -423,6 +525,20 @@ def main() -> None:
                 mime="text/csv",
                 key=f"table_csv_{file_id}",
             )
+
+    with st.expander("FAQ: OpenFOAM Residual Plotting"):
+        st.markdown(
+            """
+            **What files are supported?**  
+            OpenFOAM residual `.dat`, `.log`, and `.txt` files that contain solver residual entries.
+
+            **Are residual plots on log scale?**  
+            Yes. Interactive and static plots use a logarithmic residual axis for convergence analysis.
+
+            **Can I export outputs?**  
+            Yes. Export per-file CSV tables and download all static plot images as a ZIP file.
+            """
+        )
 
 
 if __name__ == "__main__":
