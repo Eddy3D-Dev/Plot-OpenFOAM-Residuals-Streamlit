@@ -11,10 +11,10 @@ import streamlit as st
 
 FEATURE_COLUMNS = ["Ux", "Uy", "Uz", "p", "epsilon", "k"]
 TIME_RE = re.compile(
-    r"^\s*Time\s*=\s*(?P<time>[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*$"
+    r"(?:^|\s)Time\s*=\s*(?P<time>[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)"
 )
 SOLVE_RE = re.compile(
-    r"^\s*[^:]+:\s+Solving for (?P<field>[^,]+), Initial residual = (?P<residual>[^,]+),"
+    r"Solving for (?P<field>[^,]+),\s*Initial residual\s*=\s*(?P<residual>[^,]+),"
 )
 
 
@@ -80,37 +80,52 @@ def parse_residual_dat(raw_text: str) -> pd.DataFrame:
 
 def parse_openfoam_log(raw_text: str) -> pd.DataFrame:
     rows: list[dict[str, float]] = []
-    indices: list[int] = []
+    indices: list[float] = []
     current_row: dict[str, float] | None = None
-    time_step = 0
+    current_index: float | None = None
+    fallback_index = 0
+
+    def flush_current_row() -> None:
+        nonlocal fallback_index
+        if not current_row:
+            return
+        rows.append(current_row)
+        if current_index is not None and pd.notna(current_index):
+            indices.append(float(current_index))
+        else:
+            indices.append(float(fallback_index))
+            fallback_index += 1
 
     for line in raw_text.splitlines():
-        if TIME_RE.match(line):
-            if current_row:
-                rows.append(current_row)
-                indices.append(time_step)
-            time_step += 1
+        time_match = TIME_RE.search(line)
+        if time_match:
+            flush_current_row()
             current_row = {}
+            parsed_time = parse_numeric(time_match.group("time"))
+            current_index = float(parsed_time) if pd.notna(parsed_time) else None
             continue
 
-        if current_row is None:
-            continue
-
-        match = SOLVE_RE.match(line)
+        match = SOLVE_RE.search(line)
         if match is None:
             continue
 
+        if current_row is None:
+            current_row = {}
+            current_index = None
+
         field = match.group("field").strip()
-        if field in current_row:
+        residual = parse_numeric(match.group("residual"))
+        if pd.isna(residual):
             continue
 
-        residual = parse_numeric(match.group("residual"))
-        if pd.notna(residual):
-            current_row[field] = float(residual)
+        if field in current_row:
+            flush_current_row()
+            current_row = {}
+            current_index = None
 
-    if current_row:
-        rows.append(current_row)
-        indices.append(time_step)
+        current_row[field] = float(residual)
+
+    flush_current_row()
 
     if not rows:
         raise ValueError("No OpenFOAM residual entries were found in this log file.")
@@ -125,9 +140,29 @@ def parse_openfoam_log(raw_text: str) -> pd.DataFrame:
 
 def parse_residual_file(raw_text: str, filename: str) -> pd.DataFrame:
     lower_name = filename.lower()
-    prefer_dat = lower_name.endswith(".dat")
-    primary = parse_residual_dat if prefer_dat else parse_openfoam_log
-    fallback = parse_openfoam_log if prefer_dat else parse_residual_dat
+    prefer_dat_by_name = lower_name.endswith(".dat")
+    prefer_log_by_name = lower_name.endswith((".log", ".out", ".txt"))
+    has_dat_header = bool(re.search(r"^\s*#\s*Time(?:\s|$)", raw_text, flags=re.MULTILINE))
+    has_log_time = bool(
+        re.search(
+            r"(?:^|\n)\s*Time\s*=\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?",
+            raw_text,
+            flags=re.MULTILINE,
+        )
+    )
+    has_log_solver = bool(re.search(r"Solving for\s+[^,]+,\s*Initial residual\s*=", raw_text))
+
+    looks_like_log = has_log_time or has_log_solver
+    if looks_like_log and not has_dat_header:
+        primary, fallback = parse_openfoam_log, parse_residual_dat
+    elif has_dat_header and not looks_like_log:
+        primary, fallback = parse_residual_dat, parse_openfoam_log
+    elif prefer_dat_by_name:
+        primary, fallback = parse_residual_dat, parse_openfoam_log
+    elif prefer_log_by_name:
+        primary, fallback = parse_openfoam_log, parse_residual_dat
+    else:
+        primary, fallback = parse_openfoam_log, parse_residual_dat
 
     try:
         return primary(raw_text)

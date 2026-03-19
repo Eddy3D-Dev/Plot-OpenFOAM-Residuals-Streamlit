@@ -90,10 +90,9 @@ async function parseSelectedFiles() {
 }
 
 function parseResidualData(rawText, fileName = "") {
-    const lowerName = fileName.toLowerCase();
-    const preferDat = lowerName.endsWith(".dat");
-    const primaryParser = preferDat ? parseResidualDat : parseOpenFoamLog;
-    const fallbackParser = preferDat ? parseOpenFoamLog : parseResidualDat;
+    const likelyFormat = detectLikelyFormat(rawText, fileName);
+    const primaryParser = likelyFormat === "dat" ? parseResidualDat : parseOpenFoamLog;
+    const fallbackParser = likelyFormat === "dat" ? parseOpenFoamLog : parseResidualDat;
 
     try {
         return buildParsedOutput(primaryParser(rawText));
@@ -104,6 +103,30 @@ function parseResidualData(rawText, fileName = "") {
             throw primaryError;
         }
     }
+}
+
+function detectLikelyFormat(rawText, fileName = "") {
+    const lowerName = fileName.toLowerCase();
+    const preferDatByName = lowerName.endsWith(".dat");
+    const preferLogByName = lowerName.endsWith(".log") || lowerName.endsWith(".out") || lowerName.endsWith(".txt");
+    const hasDatHeader = /^\s*#\s*Time(?:\s|$)/m.test(rawText);
+    const hasLogTime = /(?:^|\n)\s*Time\s*=\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/m.test(rawText);
+    const hasSolveMarker = /Solving for\s+[^,]+,\s*Initial residual\s*=/m.test(rawText);
+    const looksLikeLog = hasLogTime || hasSolveMarker;
+
+    if (looksLikeLog && !hasDatHeader) {
+        return "log";
+    }
+    if (hasDatHeader && !looksLikeLog) {
+        return "dat";
+    }
+    if (preferDatByName) {
+        return "dat";
+    }
+    if (preferLogByName) {
+        return "log";
+    }
+    return "log";
 }
 
 function buildParsedOutput(parsed) {
@@ -183,27 +206,36 @@ function parseResidualDat(rawText) {
 }
 
 function parseOpenFoamLog(rawText) {
-    const timePattern = /^\s*Time\s*=\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?\s*$/;
-    const solvePattern = /^\s*[^:]+:\s+Solving for ([^,]+), Initial residual = ([^,]+),/;
+    const timePattern = /(?:^|\s)Time\s*=\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)/;
+    const solvePattern = /Solving for\s+([^,]+),\s*Initial residual\s*=\s*([^,]+),/;
     const rows = [];
     const indices = [];
     let currentRow = null;
-    let timeStep = 0;
+    let currentIndex = null;
+    let fallbackIndex = 0;
+
+    const flushCurrentRow = () => {
+        if (!currentRow || Object.keys(currentRow).length === 0) {
+            return;
+        }
+        rows.push(currentRow);
+        if (Number.isFinite(currentIndex)) {
+            indices.push(currentIndex);
+        } else {
+            indices.push(fallbackIndex);
+            fallbackIndex += 1;
+        }
+    };
 
     const lines = rawText.split(/\r?\n/);
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
         const line = lines[lineIndex];
-        if (timePattern.test(line)) {
-            if (currentRow && Object.keys(currentRow).length > 0) {
-                rows.push(currentRow);
-                indices.push(timeStep);
-            }
-            timeStep += 1;
+        const timeMatch = line.match(timePattern);
+        if (timeMatch) {
+            flushCurrentRow();
             currentRow = {};
-            continue;
-        }
-
-        if (currentRow === null) {
+            const parsedTime = Number.parseFloat(timeMatch[1]);
+            currentIndex = Number.isFinite(parsedTime) ? parsedTime : null;
             continue;
         }
 
@@ -212,21 +244,27 @@ function parseOpenFoamLog(rawText) {
             continue;
         }
 
+        if (currentRow === null) {
+            currentRow = {};
+            currentIndex = null;
+        }
+
         const field = solveMatch[1].trim();
-        if (Object.prototype.hasOwnProperty.call(currentRow, field)) {
+        const residual = Number.parseFloat(solveMatch[2].trim());
+        if (!Number.isFinite(residual)) {
             continue;
         }
 
-        const residual = Number.parseFloat(solveMatch[2].trim());
-        if (Number.isFinite(residual)) {
-            currentRow[field] = residual;
+        if (Object.prototype.hasOwnProperty.call(currentRow, field)) {
+            flushCurrentRow();
+            currentRow = {};
+            currentIndex = null;
         }
+
+        currentRow[field] = residual;
     }
 
-    if (currentRow && Object.keys(currentRow).length > 0) {
-        rows.push(currentRow);
-        indices.push(timeStep);
-    }
+    flushCurrentRow();
 
     if (rows.length === 0) {
         throw new Error("No OpenFOAM residual entries were found in this log file.");
