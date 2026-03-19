@@ -1,0 +1,309 @@
+from __future__ import annotations
+
+import hashlib
+import io
+import re
+from pathlib import Path
+
+import altair as alt
+import pandas as pd
+import streamlit as st
+
+FEATURE_COLUMNS = ["Ux", "Uy", "Uz", "p", "epsilon", "k"]
+TIME_RE = re.compile(
+    r"^\s*Time\s*=\s*(?P<time>[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*$"
+)
+SOLVE_RE = re.compile(
+    r"^\s*[^:]+:\s+Solving for (?P<field>[^,]+), Initial residual = (?P<residual>[^,]+),"
+)
+
+
+def parse_numeric(value: str) -> float:
+    raw = value.strip()
+    if not raw or raw.upper() == "N/A":
+        return float("nan")
+    try:
+        return float(raw)
+    except ValueError:
+        return float("nan")
+
+
+def parse_residual_dat(raw_text: str) -> pd.DataFrame:
+    lines = raw_text.splitlines()
+    header: list[str] | None = None
+
+    for line in lines:
+        if re.match(r"^\s*#\s*Time(?:\s|$)", line):
+            header = line.replace("#", " ").split()
+            break
+
+    if not header:
+        raise ValueError('Expected a "# Time" header row in this .dat file.')
+
+    try:
+        time_index = header.index("Time")
+    except ValueError as exc:
+        raise ValueError('Expected a "Time" column in this .dat file.') from exc
+
+    value_columns = [name for i, name in enumerate(header) if i != time_index]
+    time_values: list[float] = []
+    row_values: dict[str, list[float]] = {name: [] for name in value_columns}
+
+    for line_number, line in enumerate(lines, start=1):
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+
+        fields = stripped.split()
+        if len(fields) > len(header):
+            raise ValueError(
+                f"Data row {line_number} has more values than header columns."
+            )
+
+        time_values.append(parse_numeric(fields[time_index] if time_index < len(fields) else ""))
+        for column_index, column_name in enumerate(header):
+            if column_index == time_index:
+                continue
+            cell = fields[column_index] if column_index < len(fields) else ""
+            row_values[column_name].append(parse_numeric(cell))
+
+    if not time_values:
+        raise ValueError("No data rows found in this .dat file.")
+
+    data = pd.DataFrame(row_values, index=time_values)
+    data.index.name = "Time"
+    data = data.dropna(axis=1, how="all")
+    if data.empty:
+        raise ValueError("No numeric residual columns found in this .dat file.")
+    return data
+
+
+def parse_openfoam_log(raw_text: str) -> pd.DataFrame:
+    rows: list[dict[str, float]] = []
+    indices: list[int] = []
+    current_row: dict[str, float] | None = None
+    time_step = 0
+
+    for line in raw_text.splitlines():
+        if TIME_RE.match(line):
+            if current_row:
+                rows.append(current_row)
+                indices.append(time_step)
+            time_step += 1
+            current_row = {}
+            continue
+
+        if current_row is None:
+            continue
+
+        match = SOLVE_RE.match(line)
+        if match is None:
+            continue
+
+        field = match.group("field").strip()
+        if field in current_row:
+            continue
+
+        residual = parse_numeric(match.group("residual"))
+        if pd.notna(residual):
+            current_row[field] = float(residual)
+
+    if current_row:
+        rows.append(current_row)
+        indices.append(time_step)
+
+    if not rows:
+        raise ValueError("No OpenFOAM residual entries were found in this log file.")
+
+    data = pd.DataFrame(rows, index=indices)
+    data.index.name = "Time"
+    data = data.dropna(axis=1, how="all")
+    if data.empty:
+        raise ValueError("No numeric residual columns found in this log file.")
+    return data
+
+
+def parse_residual_file(raw_text: str, filename: str) -> pd.DataFrame:
+    lower_name = filename.lower()
+    prefer_dat = lower_name.endswith(".dat")
+    primary = parse_residual_dat if prefer_dat else parse_openfoam_log
+    fallback = parse_openfoam_log if prefer_dat else parse_residual_dat
+
+    try:
+        return primary(raw_text)
+    except Exception as primary_error:
+        try:
+            return fallback(raw_text)
+        except Exception:
+            raise primary_error
+
+
+def build_long_frame(data: pd.DataFrame) -> pd.DataFrame:
+    frame = data.reset_index().melt(
+        id_vars=["Time"],
+        var_name="Variable",
+        value_name="Residual",
+    )
+    frame["Time"] = pd.to_numeric(frame["Time"], errors="coerce")
+    frame["Residual"] = pd.to_numeric(frame["Residual"], errors="coerce")
+    frame = frame.dropna(subset=["Time", "Residual"])
+    frame = frame[frame["Residual"] > 0]
+    return frame
+
+
+def build_chart(data: pd.DataFrame, *, interactive: bool, height: int) -> alt.Chart | None:
+    long_frame = build_long_frame(data)
+    if long_frame.empty:
+        return None
+
+    ordered_cols = [c for c in FEATURE_COLUMNS if c in data.columns]
+    ordered_cols.extend([c for c in data.columns if c not in ordered_cols])
+
+    chart = (
+        alt.Chart(long_frame)
+        .mark_line()
+        .encode(
+            x=alt.X("Time:Q", title="Iterations"),
+            y=alt.Y(
+                "Residual:Q",
+                title="Residuals",
+                scale=alt.Scale(type="log"),
+            ),
+            color=alt.Color("Variable:N", sort=ordered_cols),
+            tooltip=[
+                alt.Tooltip("Time:Q", format=".6g"),
+                alt.Tooltip("Variable:N"),
+                alt.Tooltip("Residual:Q", format=".6e"),
+            ],
+        )
+        .properties(height=height)
+    )
+
+    if interactive:
+        return chart.interactive()
+    return chart
+
+
+def make_file_id(name: str, raw_bytes: bytes) -> str:
+    digest = hashlib.sha1(raw_bytes, usedforsecurity=False).hexdigest()[:12]
+    return f"{name}-{digest}"
+
+
+def main() -> None:
+    st.set_page_config(page_title="Plot OpenFOAM Residuals", layout="wide")
+    st.title("Plot OpenFOAM Residuals")
+    st.caption("Upload OpenFOAM residual `.dat` or `.log` files.")
+
+    uploaded_files = st.file_uploader(
+        "Select files",
+        type=["dat", "log", "txt"],
+        accept_multiple_files=True,
+    )
+
+    if not uploaded_files:
+        st.info("Upload one or more OpenFOAM residual files to start.")
+        return
+
+    parsed_items: list[dict[str, object]] = []
+    errors: list[tuple[str, str]] = []
+
+    for uploaded in uploaded_files:
+        raw_bytes = uploaded.getvalue()
+        text = raw_bytes.decode("utf-8", errors="replace")
+        try:
+            data = parse_residual_file(text, uploaded.name)
+            parsed_items.append(
+                {
+                    "name": uploaded.name,
+                    "file_id": make_file_id(uploaded.name, raw_bytes),
+                    "data": data,
+                }
+            )
+        except Exception as exc:
+            errors.append((uploaded.name, str(exc)))
+
+    ok_count = len(parsed_items)
+    err_count = len(errors)
+    st.write(f"{len(uploaded_files)} files selected: {ok_count} parsed, {err_count} failed.")
+
+    for filename, message in errors:
+        st.error(f"{filename}: {message}")
+
+    if not parsed_items:
+        return
+
+    show_names_default = len(parsed_items) > 1
+    controls = st.columns([1, 1, 1])
+    show_filenames = controls[0].checkbox(
+        "Show filenames",
+        value=show_names_default,
+        disabled=show_names_default,
+    )
+    interactive_height = controls[1].slider("Interactive height", 240, 900, 420, 20)
+    static_height = controls[2].slider("Static height", 240, 900, 360, 20)
+
+    tab_interactive, tab_static, tab_table = st.tabs(["Interactive", "Static", "Data"])
+
+    with tab_interactive:
+        for item in parsed_items:
+            name = str(item["name"])
+            file_id = str(item["file_id"])
+            data = item["data"]
+            if show_filenames:
+                st.subheader(name)
+            chart = build_chart(data, interactive=True, height=interactive_height)
+            if chart is None:
+                st.warning(f"{name}: no positive residual values to chart.")
+            else:
+                st.altair_chart(chart, width="stretch")
+            csv_bytes = data.to_csv().encode("utf-8")
+            st.download_button(
+                f"Download CSV ({name})",
+                data=csv_bytes,
+                file_name=f"{Path(name).stem}.csv",
+                mime="text/csv",
+                key=f"interactive_csv_{file_id}",
+            )
+
+    with tab_static:
+        for item in parsed_items:
+            name = str(item["name"])
+            file_id = str(item["file_id"])
+            data = item["data"]
+            if show_filenames:
+                st.subheader(name)
+            chart = build_chart(data, interactive=False, height=static_height)
+            if chart is None:
+                st.warning(f"{name}: no positive residual values to chart.")
+            else:
+                st.altair_chart(chart, width="stretch")
+            csv_bytes = data.to_csv().encode("utf-8")
+            st.download_button(
+                f"Download CSV ({name})",
+                data=csv_bytes,
+                file_name=f"{Path(name).stem}.csv",
+                mime="text/csv",
+                key=f"static_csv_{file_id}",
+            )
+
+    with tab_table:
+        for item in parsed_items:
+            name = str(item["name"])
+            file_id = str(item["file_id"])
+            data = item["data"]
+            if show_filenames:
+                st.subheader(name)
+            st.dataframe(data.reset_index(), width="stretch", height=360)
+            csv_buffer = io.StringIO()
+            data.to_csv(csv_buffer)
+            st.download_button(
+                f"Download CSV ({name})",
+                data=csv_buffer.getvalue().encode("utf-8"),
+                file_name=f"{Path(name).stem}.csv",
+                mime="text/csv",
+                key=f"table_csv_{file_id}",
+            )
+
+
+if __name__ == "__main__":
+    main()
