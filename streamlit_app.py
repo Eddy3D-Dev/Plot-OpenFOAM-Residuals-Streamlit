@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import traceback
 import re
 import zipfile
 from pathlib import Path
@@ -406,33 +407,37 @@ def main() -> None:
     )
 
     if not uploaded_files:
-        st.info("Upload one or more OpenFOAM residual files to start.")
+        st.info("Upload one or more OpenFOAM residual files to start. Example `.dat` format:")
+        st.code("# OpenFOAM\n# Time alpha beta gamma\n1 0.1 0.2 0.3\n2 0.01 0.02 0.03", language="text")
         return
 
     parsed_items: list[dict[str, object]] = []
-    errors: list[tuple[str, str]] = []
+    errors: list[tuple[str, str, str]] = []
 
-    for uploaded in uploaded_files:
-        raw_bytes = uploaded.getvalue()
-        text = raw_bytes.decode("utf-8", errors="replace")
-        try:
-            data = parse_residual_file(text, uploaded.name)
-            parsed_items.append(
-                {
-                    "name": uploaded.name,
-                    "file_id": make_file_id(uploaded.name, raw_bytes),
-                    "data": data,
-                }
-            )
-        except Exception as exc:
-            errors.append((uploaded.name, str(exc)))
+    with st.spinner("Processing uploaded files..."):
+        for uploaded in uploaded_files:
+            raw_bytes = uploaded.getvalue()
+            text = raw_bytes.decode("utf-8", errors="replace")
+            try:
+                data = parse_residual_file(text, uploaded.name)
+                parsed_items.append(
+                    {
+                        "name": uploaded.name,
+                        "file_id": make_file_id(uploaded.name, raw_bytes),
+                        "data": data,
+                    }
+                )
+            except Exception as exc:
+                errors.append((uploaded.name, str(exc), traceback.format_exc()))
 
     ok_count = len(parsed_items)
     err_count = len(errors)
     st.write(f"{len(uploaded_files)} files selected: {ok_count} parsed, {err_count} failed.")
 
-    for filename, message in errors:
+    for filename, message, tb in errors:
         st.error(f"{filename}: {message}")
+        with st.expander("View error details"):
+            st.code(tb, language="python")
 
     if not parsed_items:
         return
