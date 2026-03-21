@@ -215,6 +215,8 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int) -> alt.Ch
     ordered_cols = [c for c in FEATURE_COLUMNS if c in data.columns]
     ordered_cols.extend([c for c in data.columns if c not in ordered_cols])
 
+    selection = alt.selection_point(fields=["Variable"], bind="legend")
+
     chart = (
         alt.Chart(long_frame)
         .mark_line()
@@ -226,12 +228,14 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int) -> alt.Ch
                 scale=alt.Scale(type="log"),
             ),
             color=alt.Color("Variable:N", sort=ordered_cols),
+            opacity=alt.condition(selection, alt.value(1.0), alt.value(0.2)),
             tooltip=[
                 alt.Tooltip("Time:Q", format=".6g"),
                 alt.Tooltip("Variable:N"),
                 alt.Tooltip("Residual:Q", format=".6e"),
             ],
         )
+        .add_params(selection)
         .properties(height=height)
     )
 
