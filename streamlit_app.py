@@ -230,9 +230,9 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int) -> alt.Ch
             color=alt.Color("Variable:N", sort=ordered_cols),
             opacity=alt.condition(selection, alt.value(1.0), alt.value(0.2)),
             tooltip=[
-                alt.Tooltip("Time:Q", format=".6g"),
-                alt.Tooltip("Variable:N"),
-                alt.Tooltip("Residual:Q", format=".6e"),
+                alt.Tooltip("Time:Q", title="Iteration", format=".6g"),
+                alt.Tooltip("Variable:N", title="Variable"),
+                alt.Tooltip("Residual:Q", title="Residual", format=".6e"),
             ],
         )
         .add_params(selection)
@@ -456,7 +456,7 @@ def main() -> None:
     interactive_height = controls[1].slider("Interactive height", 240, 900, 420, 20)
     static_height = controls[2].slider("Static height", 240, 900, 360, 20)
 
-    tab_interactive, tab_static, tab_table = st.tabs(["Interactive", "Static", "Data"])
+    tab_interactive, tab_static, tab_table = st.tabs(["Interactive Plot", "Static Plot", "Raw Data"])
 
     with tab_interactive:
         for item in parsed_items:
