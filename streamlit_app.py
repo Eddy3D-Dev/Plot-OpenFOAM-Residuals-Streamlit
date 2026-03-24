@@ -408,6 +408,7 @@ def main() -> None:
         "Select files",
         type=["dat", "log", "txt"],
         accept_multiple_files=True,
+        help="Upload multiple .dat or .log files to compare convergence side-by-side.",
     )
 
     if not uploaded_files:
@@ -452,9 +453,16 @@ def main() -> None:
         "Show filenames",
         value=show_names_default,
         disabled=show_names_default,
+        help="Filenames are always shown when comparing multiple files." if show_names_default else "Show the filename above each plot.",
     )
-    interactive_height = controls[1].slider("Interactive height", 240, 900, 420, 20)
-    static_height = controls[2].slider("Static height", 240, 900, 360, 20)
+    interactive_height = controls[1].slider(
+        "Interactive height", 240, 900, 420, 20,
+        help="Adjust the vertical size (in pixels) of the interactive charts."
+    )
+    static_height = controls[2].slider(
+        "Static height", 240, 900, 360, 20,
+        help="Adjust the vertical size (in pixels) of the static Matplotlib plots."
+    )
 
     tab_interactive, tab_static, tab_table = st.tabs(["Interactive Plot", "Static Plot", "Raw Data"])
 
@@ -480,7 +488,11 @@ def main() -> None:
             )
 
     with tab_static:
-        show_grid = st.checkbox("Show grid", value=True)
+        show_grid = st.checkbox(
+            "Show grid",
+            value=True,
+            help="Displays subtle grid lines on both major and minor ticks to improve readability on logarithmic scales.",
+        )
         static_images: list[tuple[str, bytes]] = []
 
         for item in parsed_items:
