@@ -439,6 +439,14 @@ def main() -> None:
     err_count = len(errors)
     st.write(f"{len(uploaded_files)} files selected: {ok_count} parsed, {err_count} failed.")
 
+    if "processed_file_ids" not in st.session_state:
+        st.session_state.processed_file_ids = set()
+
+    new_file_ids = {str(item["file_id"]) for item in parsed_items} - st.session_state.processed_file_ids
+    if new_file_ids:
+        st.toast(f"🎉 Successfully processed {len(new_file_ids)} new file(s)!")
+        st.session_state.processed_file_ids.update(new_file_ids)
+
     for filename, message, tb in errors:
         st.error(f"{filename}: {message}")
         with st.expander("View error details"):
