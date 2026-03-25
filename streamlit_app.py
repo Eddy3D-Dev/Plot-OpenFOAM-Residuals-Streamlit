@@ -411,7 +411,29 @@ def main() -> None:
         help="Upload multiple .dat or .log files to compare convergence side-by-side.",
     )
 
-    if not uploaded_files:
+    has_files = bool(uploaded_files)
+    disabled_help = "⚠️ Please upload a residual file first to enable this setting."
+
+    with st.sidebar:
+        st.header("⚙️ Plot Settings")
+        interactive_height = st.slider(
+            "Interactive height", 240, 900, 420, 20,
+            disabled=not has_files,
+            help="Adjust the vertical size (in pixels) of the interactive charts." if has_files else disabled_help
+        )
+        static_height = st.slider(
+            "Static height", 240, 900, 360, 20,
+            disabled=not has_files,
+            help="Adjust the vertical size (in pixels) of the static Matplotlib plots." if has_files else disabled_help
+        )
+        show_grid = st.checkbox(
+            "Show static grid",
+            value=True,
+            disabled=not has_files,
+            help="Displays subtle grid lines on both major and minor ticks to improve readability on logarithmic scales." if has_files else disabled_help,
+        )
+
+    if not has_files:
         st.info("Upload one or more OpenFOAM residual files to start. Example `.dat` format:")
         st.code("# OpenFOAM\n# Time alpha beta gamma\n1 0.1 0.2 0.3\n2 0.01 0.02 0.03", language="text")
         return
@@ -456,20 +478,11 @@ def main() -> None:
         return
 
     show_names_default = len(parsed_items) > 1
-    controls = st.columns([1, 1, 1])
-    show_filenames = controls[0].checkbox(
+    show_filenames = st.checkbox(
         "Show filenames",
         value=show_names_default,
         disabled=show_names_default,
         help="Filenames are always shown when comparing multiple files." if show_names_default else "Show the filename above each plot.",
-    )
-    interactive_height = controls[1].slider(
-        "Interactive height", 240, 900, 420, 20,
-        help="Adjust the vertical size (in pixels) of the interactive charts."
-    )
-    static_height = controls[2].slider(
-        "Static height", 240, 900, 360, 20,
-        help="Adjust the vertical size (in pixels) of the static Matplotlib plots."
     )
 
     tab_interactive, tab_static, tab_table = st.tabs(["Interactive Plot", "Static Plot", "Raw Data"])
@@ -496,11 +509,6 @@ def main() -> None:
             )
 
     with tab_static:
-        show_grid = st.checkbox(
-            "Show grid",
-            value=True,
-            help="Displays subtle grid lines on both major and minor ticks to improve readability on logarithmic scales.",
-        )
         static_images: list[tuple[str, bytes]] = []
 
         for item in parsed_items:
