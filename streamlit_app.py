@@ -506,6 +506,7 @@ def main() -> None:
                 file_name=f"{Path(name).stem}.csv",
                 mime="text/csv",
                 key=f"interactive_csv_{file_id}",
+                icon=":material/download:",
             )
 
     with tab_static:
@@ -534,6 +535,7 @@ def main() -> None:
                 file_name=f"{Path(name).stem}.csv",
                 mime="text/csv",
                 key=f"static_csv_{file_id}",
+                icon=":material/download:",
             )
 
         if static_images:
@@ -543,6 +545,7 @@ def main() -> None:
                 file_name="openfoam_residual_static_plots.zip",
                 mime="application/zip",
                 key="export_all_static_images_zip",
+                icon=":material/folder_zip:",
             )
 
     with tab_table:
@@ -587,6 +590,7 @@ def main() -> None:
                 file_name=f"{Path(name).stem}.csv",
                 mime="text/csv",
                 key=f"table_csv_{file_id}",
+                icon=":material/download:",
             )
 
     with st.expander("FAQ: OpenFOAM Residual Plotting"):
