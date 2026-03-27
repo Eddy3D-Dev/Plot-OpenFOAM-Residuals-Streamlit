@@ -52,3 +52,7 @@
 ## 2026-03-24 - Enhancing Empty States and Error Messages
 **Learning:** Dead-end empty states and generic error messages provide poor user experiences. Users don't know what format to use for file uploads, and when errors occur, generic messages don't help them self-correct.
 **Action:** Always enhance empty states by showing explicit examples (e.g., using `st.code`) of expected file formats. For error notifications, always surface raw exception traces inside an `st.expander` to help users understand what went wrong without cluttering the main UI.
+
+## 2026-03-26 - Action Discoverability with Icons
+**Learning:** Text-only buttons for common primary actions (like downloading a CSV or exporting an image zip) blend into the UI, requiring users to read every button's text to find their desired action. This increases cognitive load and reduces discoverability.
+**Action:** Always pair prominent calls to action (like `st.download_button`) with contextually relevant, universally understood Material icons (e.g., `:material/download:` or `:material/folder_zip:`) to enhance scannability and create a more intuitive, accessible user experience.
