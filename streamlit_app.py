@@ -581,6 +581,7 @@ def main() -> None:
                 width="stretch",
                 height=360,
                 column_config=col_config,
+                hide_index=True,
             )
             csv_buffer = io.StringIO()
             data.to_csv(csv_buffer)
