@@ -60,3 +60,7 @@
 ## 2026-03-27 - Removing Redundant Table Indices
 **Learning:** When displaying Pandas DataFrames in Streamlit via `st.dataframe`, Streamlit automatically renders the dataframe's index as the first column. If the dataframe was previously reset (`data.reset_index()`), this results in a redundant, meaningless numerical column (0, 1, 2...) that clutters the UI and distracts from the actual user data.
 **Action:** Always use `hide_index=True` in `st.dataframe` when displaying dataframes that either lack a meaningful index or have had their meaningful index explicitly converted to a standard column, ensuring a clean and focused data presentation.
+
+## $(date +%Y-%m-%d) - Add unit formatting to Streamlit sliders
+**Learning:** Adding explicit units (e.g., `%d px`) directly to Streamlit `st.slider` widgets via the `format` parameter significantly improves clarity at a glance, reducing the need for users to read help tooltips to understand the unit of measurement.
+**Action:** When adding or updating Streamlit sliders that represent physical units (pixels, percentages, degrees), always use the `format` parameter to append the unit directly to the displayed value.

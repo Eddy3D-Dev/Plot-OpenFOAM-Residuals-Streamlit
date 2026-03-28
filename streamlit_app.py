@@ -418,11 +418,13 @@ def main() -> None:
         st.header("⚙️ Plot Settings")
         interactive_height = st.slider(
             "Interactive height", 240, 900, 420, 20,
+            format="%d px",
             disabled=not has_files,
             help="Adjust the vertical size (in pixels) of the interactive charts." if has_files else disabled_help
         )
         static_height = st.slider(
             "Static height", 240, 900, 360, 20,
+            format="%d px",
             disabled=not has_files,
             help="Adjust the vertical size (in pixels) of the static Matplotlib plots." if has_files else disabled_help
         )
