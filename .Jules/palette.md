@@ -56,3 +56,7 @@
 ## 2026-03-26 - Action Discoverability with Icons
 **Learning:** Text-only buttons for common primary actions (like downloading a CSV or exporting an image zip) blend into the UI, requiring users to read every button's text to find their desired action. This increases cognitive load and reduces discoverability.
 **Action:** Always pair prominent calls to action (like `st.download_button`) with contextually relevant, universally understood Material icons (e.g., `:material/download:` or `:material/folder_zip:`) to enhance scannability and create a more intuitive, accessible user experience.
+
+## 2026-03-27 - Removing Redundant Table Indices
+**Learning:** When displaying Pandas DataFrames in Streamlit via `st.dataframe`, Streamlit automatically renders the dataframe's index as the first column. If the dataframe was previously reset (`data.reset_index()`), this results in a redundant, meaningless numerical column (0, 1, 2...) that clutters the UI and distracts from the actual user data.
+**Action:** Always use `hide_index=True` in `st.dataframe` when displaying dataframes that either lack a meaningful index or have had their meaningful index explicitly converted to a standard column, ensuring a clean and focused data presentation.
