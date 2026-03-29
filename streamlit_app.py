@@ -578,6 +578,7 @@ def main() -> None:
                         )
 
             col_config = {c: st.column_config.NumberColumn(format="%.4e") for c in valid_cols}
+            col_config["Time"] = st.column_config.NumberColumn("Iterations", format="%g")
             st.dataframe(
                 data.reset_index(),
                 width="stretch",
