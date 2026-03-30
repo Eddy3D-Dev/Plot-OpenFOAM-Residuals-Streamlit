@@ -64,3 +64,7 @@
 ## $(date +%Y-%m-%d) - Add unit formatting to Streamlit sliders
 **Learning:** Adding explicit units (e.g., `%d px`) directly to Streamlit `st.slider` widgets via the `format` parameter significantly improves clarity at a glance, reducing the need for users to read help tooltips to understand the unit of measurement.
 **Action:** When adding or updating Streamlit sliders that represent physical units (pixels, percentages, degrees), always use the `format` parameter to append the unit directly to the displayed value.
+
+## $(date +%Y-%m-%d) - Consistent Terminology Across UI Views
+**Learning:** When displaying the same underlying data attribute across different views (e.g., a chart's X-axis labeled 'Iterations' vs a data table's column labeled 'Time'), using inconsistent labels creates cognitive friction for the user trying to map the visual representation to the raw data.
+**Action:** Always ensure column headers in data tables (`st.column_config`) align perfectly with the axis titles used in corresponding charts to provide a cohesive, unified terminology across the entire application interface.
