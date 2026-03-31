@@ -405,7 +405,7 @@ def main() -> None:
     )
 
     uploaded_files = st.file_uploader(
-        "Select files",
+        "Upload OpenFOAM residual files",
         type=["dat", "log", "txt"],
         accept_multiple_files=True,
         help="Upload multiple .dat or .log files to compare convergence side-by-side.",
@@ -417,16 +417,16 @@ def main() -> None:
     with st.sidebar:
         st.header("⚙️ Plot Settings")
         interactive_height = st.slider(
-            "Interactive height", 240, 900, 420, 20,
+            "Interactive plot height", 240, 900, 420, 20,
             format="%d px",
             disabled=not has_files,
             help="Adjust the vertical size (in pixels) of the interactive charts." if has_files else disabled_help
         )
         static_height = st.slider(
-            "Static height", 240, 900, 360, 20,
+            "Static plot height", 240, 900, 360, 20,
             format="%d px",
             disabled=not has_files,
-            help="Adjust the vertical size (in pixels) of the static Matplotlib plots." if has_files else disabled_help
+            help="Adjust the vertical size (in pixels) of the static plots." if has_files else disabled_help
         )
         show_grid = st.checkbox(
             "Show static grid",
@@ -504,7 +504,7 @@ def main() -> None:
     tab_interactive, tab_static, tab_table = st.tabs(["Interactive Plot", "Static Plot", "Raw Data"])
 
     with tab_interactive:
-        for item in parsed_items:
+        for idx, item in enumerate(parsed_items):
             name = str(item["name"])
             file_id = str(item["file_id"])
             data = item["data"]
@@ -524,11 +524,13 @@ def main() -> None:
                 key=f"interactive_csv_{file_id}",
                 icon=":material/download:",
             )
+            if idx < len(parsed_items) - 1:
+                st.divider()
 
     with tab_static:
         static_images: list[tuple[str, bytes]] = []
 
-        for item in parsed_items:
+        for idx, item in enumerate(parsed_items):
             name = str(item["name"])
             file_id = str(item["file_id"])
             data = item["data"]
@@ -553,8 +555,12 @@ def main() -> None:
                 key=f"static_csv_{file_id}",
                 icon=":material/download:",
             )
+            if idx < len(parsed_items) - 1:
+                st.divider()
 
         if static_images:
+            if len(parsed_items) > 1:
+                st.divider()
             st.download_button(
                 "Export all static images (.zip)",
                 data=build_images_zip(static_images),
@@ -565,7 +571,7 @@ def main() -> None:
             )
 
     with tab_table:
-        for item in parsed_items:
+        for idx, item in enumerate(parsed_items):
             name = str(item["name"])
             file_id = str(item["file_id"])
             data = item["data"]
@@ -610,6 +616,8 @@ def main() -> None:
                 key=f"table_csv_{file_id}",
                 icon=":material/download:",
             )
+            if idx < len(parsed_items) - 1:
+                st.divider()
 
     with st.expander("FAQ: OpenFOAM Residual Plotting"):
         st.markdown(

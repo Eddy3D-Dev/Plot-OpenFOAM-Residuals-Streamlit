@@ -72,3 +72,7 @@
 ## $(date +%Y-%m-%d) - Sample File Downloads in Empty States
 **Learning:** For file-upload dependent web applications, presenting an empty state without data acts as a hard barrier. Even if the expected format is documented, users must find or generate compatible files before they can evaluate the application's utility. Providing a downloadable sample file directly within the empty state significantly reduces this friction and improves onboarding.
 **Action:** Always include a clearly labeled, one-click `st.download_button` providing a minimal, valid sample file within empty states for upload-driven applications.
+
+## 2026-03-31 - Visual Grouping for Repeated Content Blocks
+**Learning:** When displaying complex repeated content blocks (like charts and data tables for multiple uploaded files) in a sequential layout, users can easily lose track of which block belongs to which file, leading to ambiguous action associations (e.g., clicking the wrong download button).
+**Action:** Always use clear visual separators (like `st.divider()`) between repeated complex UI blocks to create distinct boundaries and group related content together, significantly reducing cognitive load and preventing misclicks.
