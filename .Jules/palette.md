@@ -68,3 +68,7 @@
 ## $(date +%Y-%m-%d) - Consistent Terminology Across UI Views
 **Learning:** When displaying the same underlying data attribute across different views (e.g., a chart's X-axis labeled 'Iterations' vs a data table's column labeled 'Time'), using inconsistent labels creates cognitive friction for the user trying to map the visual representation to the raw data.
 **Action:** Always ensure column headers in data tables (`st.column_config`) align perfectly with the axis titles used in corresponding charts to provide a cohesive, unified terminology across the entire application interface.
+
+## $(date +%Y-%m-%d) - Sample File Downloads in Empty States
+**Learning:** For file-upload dependent web applications, presenting an empty state without data acts as a hard barrier. Even if the expected format is documented, users must find or generate compatible files before they can evaluate the application's utility. Providing a downloadable sample file directly within the empty state significantly reduces this friction and improves onboarding.
+**Action:** Always include a clearly labeled, one-click `st.download_button` providing a minimal, valid sample file within empty states for upload-driven applications.

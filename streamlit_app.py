@@ -438,6 +438,20 @@ def main() -> None:
     if not has_files:
         st.info("Upload one or more OpenFOAM residual files to start. Example `.dat` format:")
         st.code("# OpenFOAM\n# Time alpha beta gamma\n1 0.1 0.2 0.3\n2 0.01 0.02 0.03", language="text")
+
+        # Load sample data robustly using path relative to this script
+        sample_path = Path(__file__).parent / "test_residual.dat"
+        with open(sample_path, "rb") as f:
+            sample_data = f.read()
+
+        st.download_button(
+            label="Download sample file",
+            data=sample_data,
+            file_name="sample_residual.dat",
+            mime="text/plain",
+            icon=":material/download:",
+            help="Download a sample OpenFOAM residual file to test the application.",
+        )
         return
 
     parsed_items: list[dict[str, object]] = []
