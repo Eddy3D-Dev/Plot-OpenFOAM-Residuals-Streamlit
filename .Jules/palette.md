@@ -76,3 +76,7 @@
 ## 2026-03-31 - Visual Grouping for Repeated Content Blocks
 **Learning:** When displaying complex repeated content blocks (like charts and data tables for multiple uploaded files) in a sequential layout, users can easily lose track of which block belongs to which file, leading to ambiguous action associations (e.g., clicking the wrong download button).
 **Action:** Always use clear visual separators (like `st.divider()`) between repeated complex UI blocks to create distinct boundaries and group related content together, significantly reducing cognitive load and preventing misclicks.
+
+## 2024-04-01 - Contextual Export Actions
+**Learning:** When users see an image or visual chart, they expect the download button immediately beneath it to export that visual asset, not the raw underlying data. Redundant raw data downloads (especially if available elsewhere, like a Data tab) create a mismatch between user expectation and the button's action.
+**Action:** Always ensure export buttons are contextually relevant to the content immediately preceding them (e.g., placing an "Export Image" button below a chart, rather than a generic "Download CSV" button).

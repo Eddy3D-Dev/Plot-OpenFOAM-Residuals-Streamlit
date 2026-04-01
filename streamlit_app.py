@@ -544,17 +544,17 @@ def main() -> None:
             if figure is None:
                 st.warning(f"{name}: no positive residual values to chart.")
             else:
-                static_images.append((name, figure_to_png_bytes(figure)))
+                png_bytes = figure_to_png_bytes(figure)
+                static_images.append((name, png_bytes))
                 st.pyplot(figure, clear_figure=True)
-            csv_bytes = data.to_csv().encode("utf-8")
-            st.download_button(
-                f"Download CSV ({name})",
-                data=csv_bytes,
-                file_name=f"{Path(name).stem}.csv",
-                mime="text/csv",
-                key=f"static_csv_{file_id}",
-                icon=":material/download:",
-            )
+                st.download_button(
+                    f"Download Plot Image ({name})",
+                    data=png_bytes,
+                    file_name=f"{Path(name).stem}.png",
+                    mime="image/png",
+                    key=f"static_png_{file_id}",
+                    icon=":material/image:",
+                )
             if idx < len(parsed_items) - 1:
                 st.divider()
 
