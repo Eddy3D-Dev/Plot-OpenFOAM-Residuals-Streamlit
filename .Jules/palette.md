@@ -83,3 +83,7 @@
 ## 2025-04-02 - Embellishing Streamlit Tabs
 **Learning:** Streamlit `st.tabs` does not currently support an `icon=` keyword argument, unlike other UI components.
 **Action:** When embellishing `st.tabs` for scannability, use the native `:material/icon_name:` syntax directly within the tab title string (e.g., `st.tabs([":material/show_chart: Tab 1", ":material/image: Tab 2"])`) to add small touches of visual delight.
+
+## 2024-04-04 - Aligning download actions with visual context
+**Learning:** Download buttons placed directly beneath visual charts create an expectation of downloading an image. Placing raw data (CSV) downloads in these locations causes a mismatch between user expectation and the button's action.
+**Action:** Remove raw data download buttons from beneath visual charts. Ensure that download buttons beneath charts only export images, and that raw data downloads are placed in a dedicated "Raw Data" or similar tab. Add descriptive `help` tooltips to clarify the specific action of each download button.

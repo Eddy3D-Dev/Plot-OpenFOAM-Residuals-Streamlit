@@ -515,15 +515,6 @@ def main() -> None:
                 st.warning(f"{name}: no positive residual values to chart.")
             else:
                 st.altair_chart(chart, width="stretch")
-            csv_bytes = data.to_csv().encode("utf-8")
-            st.download_button(
-                f"Download CSV ({name})",
-                data=csv_bytes,
-                file_name=f"{Path(name).stem}.csv",
-                mime="text/csv",
-                key=f"interactive_csv_{file_id}",
-                icon=":material/download:",
-            )
             if idx < len(parsed_items) - 1:
                 st.divider()
 
@@ -554,6 +545,7 @@ def main() -> None:
                     mime="image/png",
                     key=f"static_png_{file_id}",
                     icon=":material/image:",
+                    help="Download this static plot as a PNG image.",
                 )
             if idx < len(parsed_items) - 1:
                 st.divider()
@@ -568,6 +560,7 @@ def main() -> None:
                 mime="application/zip",
                 key="export_all_static_images_zip",
                 icon=":material/folder_zip:",
+                help="Download all static plot images as a single ZIP archive.",
             )
 
     with tab_table:
@@ -615,6 +608,7 @@ def main() -> None:
                 mime="text/csv",
                 key=f"table_csv_{file_id}",
                 icon=":material/download:",
+                help="Download the raw residual data as a CSV file.",
             )
             if idx < len(parsed_items) - 1:
                 st.divider()
