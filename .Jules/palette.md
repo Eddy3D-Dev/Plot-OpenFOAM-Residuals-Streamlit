@@ -80,3 +80,6 @@
 ## 2024-04-01 - Contextual Export Actions
 **Learning:** When users see an image or visual chart, they expect the download button immediately beneath it to export that visual asset, not the raw underlying data. Redundant raw data downloads (especially if available elsewhere, like a Data tab) create a mismatch between user expectation and the button's action.
 **Action:** Always ensure export buttons are contextually relevant to the content immediately preceding them (e.g., placing an "Export Image" button below a chart, rather than a generic "Download CSV" button).
+## 2025-04-02 - Embellishing Streamlit Tabs
+**Learning:** Streamlit `st.tabs` does not currently support an `icon=` keyword argument, unlike other UI components.
+**Action:** When embellishing `st.tabs` for scannability, use the native `:material/icon_name:` syntax directly within the tab title string (e.g., `st.tabs([":material/show_chart: Tab 1", ":material/image: Tab 2"])`) to add small touches of visual delight.

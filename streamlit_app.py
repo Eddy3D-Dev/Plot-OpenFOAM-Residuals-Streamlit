@@ -501,7 +501,7 @@ def main() -> None:
         help="Filenames are always shown when comparing multiple files." if show_names_default else "Show the filename above each plot.",
     )
 
-    tab_interactive, tab_static, tab_table = st.tabs(["Interactive Plot", "Static Plot", "Raw Data"])
+    tab_interactive, tab_static, tab_table = st.tabs([":material/show_chart: Interactive Plot", ":material/image: Static Plot", ":material/table_view: Raw Data"])
 
     with tab_interactive:
         for idx, item in enumerate(parsed_items):
