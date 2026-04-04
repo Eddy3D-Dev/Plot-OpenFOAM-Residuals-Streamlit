@@ -411,7 +411,13 @@ def main() -> None:
         help="Upload multiple .dat or .log files to compare convergence side-by-side.",
     )
 
-    has_files = bool(uploaded_files)
+    if "use_sample_data" not in st.session_state:
+        st.session_state.use_sample_data = False
+
+    if uploaded_files:
+        st.session_state.use_sample_data = False
+
+    has_files = bool(uploaded_files) or st.session_state.use_sample_data
     disabled_help = "⚠️ Please upload a residual file first to enable this setting."
 
     with st.sidebar:
@@ -444,21 +450,47 @@ def main() -> None:
         with open(sample_path, "rb") as f:
             sample_data = f.read()
 
-        st.download_button(
-            label="Download sample file",
-            data=sample_data,
-            file_name="sample_residual.dat",
-            mime="text/plain",
-            icon=":material/download:",
-            help="Download a sample OpenFOAM residual file to test the application.",
-        )
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Load sample data", icon=":material/play_circle:", help="Instantly load sample data to see how the app works."):
+                st.session_state.use_sample_data = True
+                st.rerun()
+        with col2:
+            st.download_button(
+                label="Download sample file",
+                data=sample_data,
+                file_name="sample_residual.dat",
+                mime="text/plain",
+                icon=":material/download:",
+                help="Download a sample OpenFOAM residual file to test the application.",
+            )
         return
+
+    if st.session_state.use_sample_data and not uploaded_files:
+        class DummyFile:
+            def __init__(self, name: str, data: bytes):
+                self.name = name
+                self._data = data
+            def getvalue(self) -> bytes:
+                return self._data
+
+        sample_path = Path(__file__).parent / "test_residual.dat"
+        with open(sample_path, "rb") as f:
+            sample_data = f.read()
+        files_to_process = [DummyFile("test_residual.dat", sample_data)]
+
+        st.info("Currently viewing sample data.")
+        if st.button("Clear sample data", icon=":material/close:", help="Clear the sample data to upload your own files."):
+            st.session_state.use_sample_data = False
+            st.rerun()
+    else:
+        files_to_process = uploaded_files
 
     parsed_items: list[dict[str, object]] = []
     errors: list[tuple[str, str, str]] = []
 
-    with st.spinner("Processing uploaded files..."):
-        for uploaded in uploaded_files:
+    with st.spinner("Processing files..."):
+        for uploaded in files_to_process:
             raw_bytes = uploaded.getvalue()
             text = raw_bytes.decode("utf-8", errors="replace")
             try:
@@ -475,7 +507,7 @@ def main() -> None:
 
     ok_count = len(parsed_items)
     err_count = len(errors)
-    st.write(f"{len(uploaded_files)} files selected: {ok_count} parsed, {err_count} failed.")
+    st.write(f"{len(files_to_process)} files selected: {ok_count} parsed, {err_count} failed.")
 
     if "processed_file_ids" not in st.session_state:
         st.session_state.processed_file_ids = set()
