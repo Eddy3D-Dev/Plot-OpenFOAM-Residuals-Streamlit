@@ -61,15 +61,15 @@
 **Learning:** When displaying Pandas DataFrames in Streamlit via `st.dataframe`, Streamlit automatically renders the dataframe's index as the first column. If the dataframe was previously reset (`data.reset_index()`), this results in a redundant, meaningless numerical column (0, 1, 2...) that clutters the UI and distracts from the actual user data.
 **Action:** Always use `hide_index=True` in `st.dataframe` when displaying dataframes that either lack a meaningful index or have had their meaningful index explicitly converted to a standard column, ensuring a clean and focused data presentation.
 
-## $(date +%Y-%m-%d) - Add unit formatting to Streamlit sliders
+## 2026-04-04 - Add unit formatting to Streamlit sliders
 **Learning:** Adding explicit units (e.g., `%d px`) directly to Streamlit `st.slider` widgets via the `format` parameter significantly improves clarity at a glance, reducing the need for users to read help tooltips to understand the unit of measurement.
 **Action:** When adding or updating Streamlit sliders that represent physical units (pixels, percentages, degrees), always use the `format` parameter to append the unit directly to the displayed value.
 
-## $(date +%Y-%m-%d) - Consistent Terminology Across UI Views
+## 2026-04-04 - Consistent Terminology Across UI Views
 **Learning:** When displaying the same underlying data attribute across different views (e.g., a chart's X-axis labeled 'Iterations' vs a data table's column labeled 'Time'), using inconsistent labels creates cognitive friction for the user trying to map the visual representation to the raw data.
 **Action:** Always ensure column headers in data tables (`st.column_config`) align perfectly with the axis titles used in corresponding charts to provide a cohesive, unified terminology across the entire application interface.
 
-## $(date +%Y-%m-%d) - Sample File Downloads in Empty States
+## 2026-04-04 - Sample File Downloads in Empty States
 **Learning:** For file-upload dependent web applications, presenting an empty state without data acts as a hard barrier. Even if the expected format is documented, users must find or generate compatible files before they can evaluate the application's utility. Providing a downloadable sample file directly within the empty state significantly reduces this friction and improves onboarding.
 **Action:** Always include a clearly labeled, one-click `st.download_button` providing a minimal, valid sample file within empty states for upload-driven applications.
 
@@ -87,3 +87,7 @@
 ## 2024-04-04 - Aligning download actions with visual context
 **Learning:** Download buttons placed directly beneath visual charts create an expectation of downloading an image. Placing raw data (CSV) downloads in these locations causes a mismatch between user expectation and the button's action.
 **Action:** Remove raw data download buttons from beneath visual charts. Ensure that download buttons beneath charts only export images, and that raw data downloads are placed in a dedicated "Raw Data" or similar tab. Add descriptive `help` tooltips to clarify the specific action of each download button.
+
+## 2026-04-04 - Demo Buttons in Empty States
+**Learning:** For file-upload dependent web applications, providing a sample file download in the empty state is helpful, but still requires the user to manually upload it. Adding an explicit "Load sample data" button that automatically populates the application with sample data removes all friction and instantly demonstrates the application's value proposition without making the user leave the page.
+**Action:** In addition to providing sample file downloads, always add a primary "Load sample data" (or "Load Demo Data") button in the empty states of upload-driven applications. Manage this via `st.session_state` so the demo data is instantly cleared once a real file is uploaded, and provide a clear way for the user to manually exit the demo view.
