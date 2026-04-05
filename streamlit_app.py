@@ -216,6 +216,12 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int) -> alt.Ch
     ordered_cols.extend([c for c in data.columns if c not in ordered_cols])
 
     selection = alt.selection_point(fields=["Variable"], bind="legend")
+    hover = alt.selection_point(
+        fields=["Variable"],
+        on="pointerover",
+        empty=False,
+        clear="pointerout"
+    )
 
     chart = (
         alt.Chart(long_frame)
@@ -229,13 +235,14 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int) -> alt.Ch
             ),
             color=alt.Color("Variable:N", sort=ordered_cols),
             opacity=alt.condition(selection, alt.value(1.0), alt.value(0.2)),
+            strokeWidth=alt.condition(hover, alt.value(3), alt.value(1.5)),
             tooltip=[
                 alt.Tooltip("Time:Q", title="Iteration", format=".6g"),
                 alt.Tooltip("Variable:N", title="Variable"),
                 alt.Tooltip("Residual:Q", title="Residual", format=".6e"),
             ],
         )
-        .add_params(selection)
+        .add_params(selection, hover)
         .properties(height=height)
     )
 
