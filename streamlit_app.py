@@ -486,7 +486,7 @@ def main() -> None:
             sample_data = f.read()
         files_to_process = [DummyFile("test_residual.dat", sample_data)]
 
-        st.info("Currently viewing sample data.")
+        st.info("Currently viewing sample data.", icon=":material/visibility:")
         if st.button("Clear sample data", icon=":material/close:", help="Clear the sample data to upload your own files."):
             st.session_state.use_sample_data = False
             st.rerun()
@@ -525,8 +525,8 @@ def main() -> None:
         st.session_state.processed_file_ids.update(new_file_ids)
 
     for filename, message, tb in errors:
-        st.error(f"{filename}: {message}")
-        with st.expander("View error details"):
+        st.error(f"**{filename}**: {message}")
+        with st.expander("View error details", icon=":material/bug_report:"):
             st.code(tb, language="python")
 
     if not parsed_items:
@@ -551,7 +551,7 @@ def main() -> None:
                 st.subheader(name)
             chart = build_chart(data, interactive=True, height=interactive_height)
             if chart is None:
-                st.warning(f"{name}: no positive residual values to chart.")
+                st.warning(f"{name}: no positive residual values to chart (log-scale requires strictly positive values).", icon=":material/warning:")
             else:
                 st.altair_chart(chart, width="stretch")
             if idx < len(parsed_items) - 1:
@@ -572,7 +572,7 @@ def main() -> None:
                 show_grid=show_grid,
             )
             if figure is None:
-                st.warning(f"{name}: no positive residual values to chart.")
+                st.warning(f"{name}: no positive residual values to chart (log-scale requires strictly positive values).", icon=":material/warning:")
             else:
                 png_bytes = figure_to_png_bytes(figure)
                 static_images.append((name, png_bytes))
@@ -652,7 +652,7 @@ def main() -> None:
             if idx < len(parsed_items) - 1:
                 st.divider()
 
-    with st.expander("FAQ: OpenFOAM Residual Plotting"):
+    with st.expander("FAQ: OpenFOAM Residual Plotting", icon=":material/help:"):
         st.markdown(
             """
             **What files are supported?**  
