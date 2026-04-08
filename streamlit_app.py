@@ -449,7 +449,7 @@ def main() -> None:
         )
 
     if not has_files:
-        st.info("Upload one or more OpenFOAM residual files to start. Example `.dat` format:")
+        st.info("Upload one or more OpenFOAM residual files to start. Example `.dat` format:", icon=":material/upload_file:")
         st.code("# OpenFOAM\n# Time alpha beta gamma\n1 0.1 0.2 0.3\n2 0.01 0.02 0.03", language="text")
 
         # Load sample data robustly using path relative to this script
@@ -525,7 +525,7 @@ def main() -> None:
         st.session_state.processed_file_ids.update(new_file_ids)
 
     for filename, message, tb in errors:
-        st.error(f"**{filename}**: {message}")
+        st.error(f"**{filename}**: {message}", icon=":material/error:")
         with st.expander("View error details", icon=":material/bug_report:"):
             st.code(tb, language="python")
 
