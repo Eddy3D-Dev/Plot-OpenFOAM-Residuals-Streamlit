@@ -459,7 +459,13 @@ def main() -> None:
 
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Load sample data", icon=":material/play_circle:", help="Instantly load sample data to see how the app works."):
+            if st.button(
+                "Load sample data",
+                icon=":material/play_circle:",
+                type="primary",
+                use_container_width=True,
+                help="Instantly load sample data to see how the app works.",
+            ):
                 st.session_state.use_sample_data = True
                 st.rerun()
         with col2:
@@ -469,6 +475,7 @@ def main() -> None:
                 file_name="sample_residual.dat",
                 mime="text/plain",
                 icon=":material/download:",
+                use_container_width=True,
                 help="Download a sample OpenFOAM residual file to test the application.",
             )
         return
