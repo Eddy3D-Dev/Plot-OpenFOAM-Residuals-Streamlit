@@ -98,3 +98,7 @@
 ## 2026-04-06 - Empty State Button Styling
 **Learning:** In empty states containing multiple side-by-side buttons (e.g., "Load demo data" vs. "Download sample file" in columns), using default Streamlit button styling causes the buttons to have different widths depending on their text, looking messy. Furthermore, lacking a visual hierarchy makes it unclear which action is preferred.
 **Action:** Always add `type="primary"` to the most frictionless onboarding action to guide the user. Additionally, set `use_container_width=True` on all buttons in empty-state row layouts so they align uniformly and provide larger, more accessible click targets.
+
+## 2026-04-06 - Grouping Global Controls
+**Learning:** Placing layout toggles (like "Show filenames") directly inside the main content area creates visual fragmentation and dynamically pushes the main tabbed content down when they appear. This disrupts the reading flow and separates related controls.
+**Action:** Always group global display controls logically within dedicated sections (like `st.sidebar` under a "Settings" header). Use tools like `st.empty()` placeholders to inject controls into these sections even if they depend on data loaded later in the main script.
