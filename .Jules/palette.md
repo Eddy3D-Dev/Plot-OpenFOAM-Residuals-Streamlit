@@ -94,3 +94,7 @@
 ## 2026-04-06 - Enhance Streamlit Alert and Expander Scannability
 **Learning:** Users often overlook standard Streamlit expanders and informational alerts when scanning dense data dashboards. Adding contextually relevant Material icons to `st.expander`, `st.warning`, and `st.info` significantly improves visual hierarchy and helps users quickly locate secondary information (like FAQs or error details) and understand the severity/context of messages.
 **Action:** Always include the `icon` parameter (e.g., `icon=":material/help:"`) when using `st.expander`, `st.info`, `st.warning`, or `st.error` in Streamlit applications to provide immediate visual context.
+
+## 2026-04-06 - Empty State Button Styling
+**Learning:** In empty states containing multiple side-by-side buttons (e.g., "Load demo data" vs. "Download sample file" in columns), using default Streamlit button styling causes the buttons to have different widths depending on their text, looking messy. Furthermore, lacking a visual hierarchy makes it unclear which action is preferred.
+**Action:** Always add `type="primary"` to the most frictionless onboarding action to guide the user. Additionally, set `use_container_width=True` on all buttons in empty-state row layouts so they align uniformly and provide larger, more accessible click targets.
