@@ -102,3 +102,7 @@
 ## 2026-04-06 - Grouping Global Controls
 **Learning:** Placing layout toggles (like "Show filenames") directly inside the main content area creates visual fragmentation and dynamically pushes the main tabbed content down when they appear. This disrupts the reading flow and separates related controls.
 **Action:** Always group global display controls logically within dedicated sections (like `st.sidebar` under a "Settings" header). Use tools like `st.empty()` placeholders to inject controls into these sections even if they depend on data loaded later in the main script.
+
+## 2024-04-06 - Conditional Batch Actions for Redundancy Reduction
+**Learning:** Batch actions like "Export all as zip" are extremely useful for users working with multiple files, saving them repetitive clicks. However, rendering a batch "Export all" button when only one file is present in the view is redundant and confusing, creating a mismatch between UI options and actual data state.
+**Action:** Always wrap batch actions (like zipping multiple images or CSVs) in a conditional check (e.g., `if len(items) > 1:`) so they only render when they provide actual value, keeping the UI clean and relevant. Additionally, ensure these batch actions are available consistently across all applicable tabs (e.g., both static images and raw data tables) to provide a cohesive experience.
