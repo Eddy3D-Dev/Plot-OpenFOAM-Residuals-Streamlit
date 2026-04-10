@@ -429,6 +429,7 @@ def main() -> None:
 
     with st.sidebar:
         st.header("⚙️ Plot Settings")
+        filenames_placeholder = st.empty()
         interactive_height = st.slider(
             "Interactive plot height", 240, 900, 420, 20,
             format="%d px",
@@ -521,14 +522,13 @@ def main() -> None:
 
     ok_count = len(parsed_items)
     err_count = len(errors)
-    st.write(f"{len(files_to_process)} files selected: {ok_count} parsed, {err_count} failed.")
 
     if "processed_file_ids" not in st.session_state:
         st.session_state.processed_file_ids = set()
 
     new_file_ids = {str(item["file_id"]) for item in parsed_items} - st.session_state.processed_file_ids
     if new_file_ids:
-        st.toast(f"🎉 Successfully processed {len(new_file_ids)} new file(s)!")
+        st.toast(f"Successfully processed {len(new_file_ids)} new file(s)!", icon="🎉")
         st.session_state.processed_file_ids.update(new_file_ids)
 
     for filename, message, tb in errors:
@@ -540,12 +540,13 @@ def main() -> None:
         return
 
     show_names_default = len(parsed_items) > 1
-    show_filenames = st.checkbox(
-        "Show filenames",
-        value=show_names_default,
-        disabled=show_names_default,
-        help="Filenames are always shown when comparing multiple files." if show_names_default else "Show the filename above each plot.",
-    )
+    with filenames_placeholder:
+        show_filenames = st.checkbox(
+            "Show filenames",
+            value=show_names_default,
+            disabled=show_names_default,
+            help="Filenames are always shown when comparing multiple files." if show_names_default else "Show the filename above each plot.",
+        )
 
     tab_interactive, tab_static, tab_table = st.tabs([":material/show_chart: Interactive Plot", ":material/image: Static Plot", ":material/table_view: Raw Data"])
 
