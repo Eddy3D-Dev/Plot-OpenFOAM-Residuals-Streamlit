@@ -294,17 +294,17 @@ def sanitize_stem(name: str) -> str:
     return stem or "plot"
 
 
-def build_images_zip(images: list[tuple[str, bytes]]) -> bytes:
+def build_zip(items: list[tuple[str, bytes]], suffix_name: str, ext: str) -> bytes:
     buffer = io.BytesIO()
     used_names: dict[str, int] = {}
 
     with zipfile.ZipFile(buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
-        for original_name, image_bytes in images:
-            base_name = f"{sanitize_stem(original_name)}_static"
+        for original_name, file_bytes in items:
+            base_name = f"{sanitize_stem(original_name)}_{suffix_name}"
             index = used_names.get(base_name, 0)
             used_names[base_name] = index + 1
             suffix = f"_{index + 1}" if index else ""
-            archive.writestr(f"{base_name}{suffix}.png", image_bytes)
+            archive.writestr(f"{base_name}{suffix}.{ext}", file_bytes)
 
     return buffer.getvalue()
 
@@ -597,12 +597,11 @@ def main() -> None:
             if idx < len(parsed_items) - 1:
                 st.divider()
 
-        if static_images:
-            if len(parsed_items) > 1:
-                st.divider()
+        if len(static_images) > 1:
+            st.divider()
             st.download_button(
                 "Export all static images (.zip)",
-                data=build_images_zip(static_images),
+                data=build_zip(static_images, "static", "png"),
                 file_name="openfoam_residual_static_plots.zip",
                 mime="application/zip",
                 key="export_all_static_images_zip",
@@ -611,6 +610,7 @@ def main() -> None:
             )
 
     with tab_table:
+        all_csvs: list[tuple[str, bytes]] = []
         for idx, item in enumerate(parsed_items):
             name = str(item["name"])
             file_id = str(item["file_id"])
@@ -648,9 +648,11 @@ def main() -> None:
             )
             csv_buffer = io.StringIO()
             data.to_csv(csv_buffer)
+            csv_bytes = csv_buffer.getvalue().encode("utf-8")
+            all_csvs.append((name, csv_bytes))
             st.download_button(
                 f"Download CSV ({name})",
-                data=csv_buffer.getvalue().encode("utf-8"),
+                data=csv_bytes,
                 file_name=f"{Path(name).stem}.csv",
                 mime="text/csv",
                 key=f"table_csv_{file_id}",
@@ -659,6 +661,18 @@ def main() -> None:
             )
             if idx < len(parsed_items) - 1:
                 st.divider()
+
+        if len(all_csvs) > 1:
+            st.divider()
+            st.download_button(
+                "Export all data (.zip)",
+                data=build_zip(all_csvs, "data", "csv"),
+                file_name="openfoam_residual_data.zip",
+                mime="application/zip",
+                key="export_all_data_zip",
+                icon=":material/folder_zip:",
+                help="Download all raw residual data as a single ZIP archive.",
+            )
 
     with st.expander("FAQ: OpenFOAM Residual Plotting", icon=":material/help:"):
         st.markdown(
