@@ -106,3 +106,7 @@
 ## 2024-04-06 - Conditional Batch Actions for Redundancy Reduction
 **Learning:** Batch actions like "Export all as zip" are extremely useful for users working with multiple files, saving them repetitive clicks. However, rendering a batch "Export all" button when only one file is present in the view is redundant and confusing, creating a mismatch between UI options and actual data state.
 **Action:** Always wrap batch actions (like zipping multiple images or CSVs) in a conditional check (e.g., `if len(items) > 1:`) so they only render when they provide actual value, keeping the UI clean and relevant. Additionally, ensure these batch actions are available consistently across all applicable tabs (e.g., both static images and raw data tables) to provide a cohesive experience.
+
+## 2026-04-12 - Verifying Altair ARIA Labels with Playwright
+**Learning:** When using Playwright to verify the `aria-label` of an Altair/Vega-Lite chart in Streamlit, the attribute is applied to the inner `<div role="graphics-document">` element inside the `[data-testid="stVegaLiteChart"]` container, not on a `<figure>` tag.
+**Action:** Extract the inner HTML of the chart container and use regex or specific locators targeting `role="graphics-document"` to verify `aria-label` attributes for Altair charts in Streamlit.

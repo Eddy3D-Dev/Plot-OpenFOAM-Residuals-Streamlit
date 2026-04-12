@@ -243,7 +243,10 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int) -> alt.Ch
             ],
         )
         .add_params(selection, hover)
-        .properties(height=height)
+        .properties(
+            height=height,
+            description="Interactive log-scale line chart showing OpenFOAM residuals over iterations",
+        )
     )
 
     if interactive:
