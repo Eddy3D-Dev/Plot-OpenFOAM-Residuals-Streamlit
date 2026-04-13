@@ -110,3 +110,7 @@
 ## 2026-04-06 - Accessible Data Visualizations
 **Learning:** Data visualizations like Altair/Vega-Lite charts are inherently opaque to screen readers by default. Without an explicit description, visually impaired users cannot understand what the chart represents or what data it contains.
 **Action:** Always provide a clear, descriptive `aria-label` equivalent for charts. In Altair, use `.properties(description="...")` to inject a dynamic description string that explains the chart's purpose and the data it visualizes.
+
+## 2026-04-13 - Comprehensive Empty State Examples
+**Learning:** When an application supports multiple distinct file formats, showing an example for only one format leaves users guessing about the others. Providing a massive text block with examples for all formats is cluttered.
+**Action:** When a Streamlit application accepts multiple file formats, enhance the empty state by using `st.tabs` to neatly organize and present explicit format examples (e.g., via `st.code`) for each supported type, ensuring comprehensive guidance without UI clutter.
