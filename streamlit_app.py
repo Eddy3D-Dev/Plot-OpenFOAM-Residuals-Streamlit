@@ -243,7 +243,10 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int) -> alt.Ch
             ],
         )
         .add_params(selection, hover)
-        .properties(height=height)
+        .properties(
+            height=height,
+            description=f"Interactive line chart showing OpenFOAM residual convergence over iterations for variables: {', '.join(ordered_cols)}. Use the legend to isolate specific variables."
+        )
     )
 
     if interactive:
