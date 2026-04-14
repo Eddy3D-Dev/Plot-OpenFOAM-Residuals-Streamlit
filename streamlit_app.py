@@ -233,7 +233,11 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int) -> alt.Ch
                 title="Residuals",
                 scale=alt.Scale(type="log"),
             ),
-            color=alt.Color("Variable:N", sort=ordered_cols),
+            color=alt.Color(
+                "Variable:N",
+                sort=ordered_cols,
+                legend=alt.Legend(title="Variable (click to isolate)")
+            ),
             opacity=alt.condition(selection, alt.value(1.0), alt.value(0.2)),
             strokeWidth=alt.condition(hover, alt.value(3), alt.value(1.5)),
             tooltip=[

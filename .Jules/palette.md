@@ -118,3 +118,6 @@
 ## 2026-04-13 - Comprehensive Empty State Examples
 **Learning:** When an application supports multiple distinct file formats, showing an example for only one format leaves users guessing about the others. Providing a massive text block with examples for all formats is cluttered.
 **Action:** When a Streamlit application accepts multiple file formats, enhance the empty state by using `st.tabs` to neatly organize and present explicit format examples (e.g., via `st.code`) for each supported type, ensuring comprehensive guidance without UI clutter.
+## 2024-05-14 - Altair Interactive Legend Discoverability
+**Learning:** Altair line charts with `bind="legend"` selections offer powerful interactivity (isolating lines), but this functionality is completely invisible to users by default. Without a visual cue, users rarely discover they can click the legend.
+**Action:** Always append a brief, actionable hint (e.g., `legend=alt.Legend(title="Variable (click to isolate)")`) to the legend title when binding selections to it in Altair/Streamlit.
