@@ -121,3 +121,7 @@
 ## 2024-05-14 - Altair Interactive Legend Discoverability
 **Learning:** Altair line charts with `bind="legend"` selections offer powerful interactivity (isolating lines), but this functionality is completely invisible to users by default. Without a visual cue, users rarely discover they can click the legend.
 **Action:** Always append a brief, actionable hint (e.g., `legend=alt.Legend(title="Variable (click to isolate)")`) to the legend title when binding selections to it in Altair/Streamlit.
+
+## 2026-04-15 - Enhancing single-value metrics with sparklines and borders
+**Learning:** Displaying standalone final values (e.g., using `st.metric`) is useful, but often lacks visual context regarding how the value was reached. While the `delta` parameter shows the total change, adding a sparkline via `chart_data` (especially with log-scaled values for data that changes by orders of magnitude) provides an immediate, intuitive visual history of the data's progression without requiring a full chart. Furthermore, applying `border=True` neatly bounds the metric and its accompanying sparkline, establishing a clear visual hierarchy and preventing the UI from looking disorganized.
+**Action:** Always consider adding `chart_data` to `st.metric` when visualizing single values derived from time-series or sequential data to provide inline visual context. Ensure the data passed to `chart_data` is appropriately scaled (e.g., log10 for exponential decay) so the sparkline is informative, and use `border=True` to neatly containerize the component.

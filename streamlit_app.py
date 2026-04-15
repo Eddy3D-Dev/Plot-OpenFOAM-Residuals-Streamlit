@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import math
 import traceback
 import re
 import zipfile
@@ -639,12 +640,18 @@ def main() -> None:
                     first_val = float(clean_series.iloc[0])
                     final_val = float(clean_series.iloc[-1])
                     diff = final_val - first_val
+
+                    sparkline_data = [math.log10(v) if v > 0 else 0 for v in clean_series.tolist()]
+                    sparkline_data = sparkline_data[::max(1, len(sparkline_data) // 100)]
+
                     with cols[j]:
                         st.metric(
                             label=col,
-                            value=f"{final_val:.4e}",
+                            value=f"{final_val:.2e}",
                             delta=f"{diff:.2e}",
                             delta_color="inverse",
+                            border=True,
+                            chart_data=sparkline_data,
                             help=f"Change from initial iteration ({first_val:.4e})",
                         )
 
