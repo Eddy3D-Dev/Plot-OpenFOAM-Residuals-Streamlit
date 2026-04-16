@@ -630,7 +630,7 @@ def main() -> None:
             if show_filenames:
                 st.subheader(name)
 
-            st.markdown("**Final Convergence Summary**")
+            st.markdown("#### Final Convergence Summary")
             valid_cols = [c for c in data.columns if not data[c].dropna().empty]
 
             for i in range(0, len(valid_cols), 4):
@@ -655,8 +655,8 @@ def main() -> None:
                             help=f"Change from initial iteration ({first_val:.4e})",
                         )
 
-            col_config = {c: st.column_config.NumberColumn(format="%.4e") for c in valid_cols}
-            col_config["Time"] = st.column_config.NumberColumn("Iterations", format="%g")
+            col_config = {c: st.column_config.NumberColumn(format="%.4e", help=f"Residual values for the '{c}' field") for c in valid_cols}
+            col_config["Time"] = st.column_config.NumberColumn("Iterations", format="%g", help="Simulation step or iteration number")
             st.dataframe(
                 data.reset_index(),
                 width="stretch",
