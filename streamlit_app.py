@@ -695,13 +695,13 @@ def main() -> None:
     with st.expander("FAQ: OpenFOAM Residual Plotting", icon=":material/help:"):
         st.markdown(
             """
-            **What files are supported?**  
+            #### What files are supported?
             OpenFOAM residual `.dat`, `.log`, and `.txt` files that contain solver residual entries.
 
-            **Are residual plots on log scale?**  
+            #### Are residual plots on log scale?
             Yes. Interactive and static plots use a logarithmic residual axis for convergence analysis.
 
-            **Can I export outputs?**  
+            #### Can I export outputs?
             Yes. Export per-file CSV tables and download all static plot images as a ZIP file.
             """
         )
