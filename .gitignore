@@ -25,3 +25,5 @@ ENV/
 build/
 dist/
 *.egg-info/
+
+*.log
