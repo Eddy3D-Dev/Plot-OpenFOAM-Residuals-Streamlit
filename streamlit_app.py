@@ -6,6 +6,7 @@ import json
 import math
 import traceback
 import re
+import itertools
 import zipfile
 from pathlib import Path
 
@@ -268,12 +269,14 @@ def build_matplotlib_figure(data: pd.DataFrame, *, height_pixels: int, show_grid
     fig, ax = plt.subplots(figsize=(10, fig_height))
     has_series = False
 
+    line_styles = itertools.cycle(["-", "--", "-.", ":"])
+
     for column in ordered_cols:
         residual = pd.to_numeric(data[column], errors="coerce")
         mask = time_values.notna() & residual.notna() & (residual > 0)
         if not mask.any():
             continue
-        ax.plot(time_values[mask], residual[mask], label=column, linewidth=2)
+        ax.plot(time_values[mask], residual[mask], label=column, linewidth=2, linestyle=next(line_styles))
         has_series = True
 
     if not has_series:
@@ -531,9 +534,6 @@ def main() -> None:
                 )
             except Exception as exc:
                 errors.append((uploaded.name, str(exc), traceback.format_exc()))
-
-    ok_count = len(parsed_items)
-    err_count = len(errors)
 
     if "processed_file_ids" not in st.session_state:
         st.session_state.processed_file_ids = set()
