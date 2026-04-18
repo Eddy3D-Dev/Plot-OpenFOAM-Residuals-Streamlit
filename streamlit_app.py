@@ -260,7 +260,7 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int) -> alt.Ch
     return chart
 
 
-def build_matplotlib_figure(data: pd.DataFrame, *, height_pixels: int, show_grid: bool) -> plt.Figure | None:
+def build_matplotlib_figure(data: pd.DataFrame, *, height_pixels: int, show_grid: bool, accessible_line_styles: bool = True) -> plt.Figure | None:
     time_values = pd.to_numeric(data.index.to_series(), errors="coerce")
     ordered_cols = [c for c in FEATURE_COLUMNS if c in data.columns]
     ordered_cols.extend([c for c in data.columns if c not in ordered_cols])
@@ -269,7 +269,10 @@ def build_matplotlib_figure(data: pd.DataFrame, *, height_pixels: int, show_grid
     fig, ax = plt.subplots(figsize=(10, fig_height))
     has_series = False
 
-    line_styles = itertools.cycle(["-", "--", "-.", ":"])
+    if accessible_line_styles:
+        line_styles = itertools.cycle(["-", "--", "-.", ":"])
+    else:
+        line_styles = itertools.cycle(["-"])
 
     for column in ordered_cols:
         residual = pd.to_numeric(data[column], errors="coerce")
@@ -459,6 +462,12 @@ def main() -> None:
             disabled=not has_files,
             help="Displays subtle grid lines on both major and minor ticks to improve readability on logarithmic scales." if has_files else disabled_help,
         )
+        accessible_line_styles = st.checkbox(
+            "Use accessible line styles",
+            value=True,
+            disabled=not has_files,
+            help="Combines colors with different line styles to ensure static plots are readable for colorblind users and in black-and-white." if has_files else disabled_help,
+        )
 
     if not has_files:
         st.info("Upload one or more OpenFOAM residual files to start. Supported formats:", icon=":material/upload_file:")
@@ -590,6 +599,7 @@ def main() -> None:
                 data,
                 height_pixels=static_height,
                 show_grid=show_grid,
+                accessible_line_styles=accessible_line_styles,
             )
             if figure is None:
                 st.warning(f"{name}: no positive residual values to chart (log-scale requires strictly positive values).", icon=":material/warning:")
