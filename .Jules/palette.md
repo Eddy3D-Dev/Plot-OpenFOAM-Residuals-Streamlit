@@ -129,3 +129,7 @@
 ## 2026-04-18 - Semantic Headers and Contextual Column Tooltips
 **Learning:** Using non-semantic markdown formatting (like `**Bold Text**`) to simulate headers prevents screen readers from understanding the document structure, harming accessibility. Additionally, presenting raw variable names as column headers without explanation leaves users guessing their meaning.
 **Action:** Always use semantic markdown headers (like `#### Heading`) to establish proper document hierarchy for assistive technologies. Furthermore, actively use features like the `help` parameter in `st.column_config` to attach descriptive tooltips directly to data table headers, providing necessary context without cluttering the UI.
+
+## 2026-04-18 - Colorblind-Accessible Data Visualizations
+**Learning:** Relying solely on color to differentiate multiple series in a static plot (like Matplotlib) makes the chart unreadable for colorblind users and useless when printed in black-and-white.
+**Action:** Always combine color with a secondary visual channel, such as line styles (`["-", "--", "-.", ":"]` or different markers), to ensure data series remain distinguishable regardless of color perception or medium.
