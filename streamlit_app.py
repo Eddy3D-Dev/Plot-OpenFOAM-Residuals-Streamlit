@@ -606,7 +606,8 @@ def main() -> None:
             else:
                 png_bytes = figure_to_png_bytes(figure)
                 static_images.append((name, png_bytes))
-                st.pyplot(figure, clear_figure=True)
+                st.image(png_bytes, caption=f"Static residual plot for {name}", use_container_width=True)
+                plt.close(figure)
                 st.download_button(
                     f"Download Plot Image ({name})",
                     data=png_bytes,
