@@ -133,3 +133,7 @@
 ## 2026-04-18 - Colorblind-Accessible Data Visualizations
 **Learning:** Relying solely on color to differentiate multiple series in a static plot (like Matplotlib) makes the chart unreadable for colorblind users and useless when printed in black-and-white.
 **Action:** Always combine color with a secondary visual channel, such as line styles (`["-", "--", "-.", ":"]` or different markers), to ensure data series remain distinguishable regardless of color perception or medium.
+
+## 2026-04-19 - Accessible Static Plots
+**Learning:** Streamlit's `st.pyplot()` function natively renders Matplotlib figures as images but lacks any mechanism to provide `alt` text or captions, rendering the plots completely opaque to screen readers.
+**Action:** When rendering static Matplotlib figures, convert the figure to PNG bytes and display it using `st.image(..., caption="...")` instead of `st.pyplot()`. This provides a descriptive text equivalent for visually impaired users. Remember to manually close the Matplotlib figure (`plt.close(fig)`) since `st.pyplot(..., clear_figure=True)` is no longer handling it.
