@@ -651,6 +651,11 @@ def main() -> None:
                     first_val = float(clean_series.iloc[0])
                     final_val = float(clean_series.iloc[-1])
                     diff = final_val - first_val
+                    if final_val > 0 and first_val > 0:
+                        oom_diff = math.log10(final_val) - math.log10(first_val)
+                        delta_str = f"{oom_diff:+.2f} OoM"
+                    else:
+                        delta_str = f"{diff:.2e}"
 
                     sparkline_data = [math.log10(v) if v > 0 else 0 for v in clean_series.tolist()]
                     sparkline_data = sparkline_data[::max(1, len(sparkline_data) // 100)]
@@ -659,7 +664,7 @@ def main() -> None:
                         st.metric(
                             label=col,
                             value=f"{final_val:.2e}",
-                            delta=f"{diff:.2e}",
+                            delta=delta_str,
                             delta_color="inverse",
                             border=True,
                             chart_data=sparkline_data,
