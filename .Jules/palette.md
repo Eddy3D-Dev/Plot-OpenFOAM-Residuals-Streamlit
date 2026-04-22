@@ -137,3 +137,7 @@
 ## 2026-04-19 - Accessible Static Plots
 **Learning:** Streamlit's `st.pyplot()` function natively renders Matplotlib figures as images but lacks any mechanism to provide `alt` text or captions, rendering the plots completely opaque to screen readers.
 **Action:** When rendering static Matplotlib figures, convert the figure to PNG bytes and display it using `st.image(..., caption="...")` instead of `st.pyplot()`. This provides a descriptive text equivalent for visually impaired users. Remember to manually close the Matplotlib figure (`plt.close(fig)`) since `st.pyplot(..., clear_figure=True)` is no longer handling it.
+
+## 2025-04-21 - Order-of-Magnitude for log-scaled metrics
+**Learning:** Displaying standalone final values (e.g., using `st.metric`) with raw differences for convergence residuals or exponentially decaying data is unintuitive (e.g., -0.09999). It is much harder to scan than order-of-magnitude values.
+**Action:** When displaying log-scaled metrics or properties that span multiple orders of magnitude, use relative Order-of-Magnitude (OoM) drop (e.g., `math.log10(final_val) - math.log10(first_val)`) formatted as `"{oom_diff:+.2f} OoM"` for the `delta` parameter to provide much clearer context on how much the value has changed.
