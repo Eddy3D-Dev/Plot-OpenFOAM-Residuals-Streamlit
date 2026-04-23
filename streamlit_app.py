@@ -209,7 +209,7 @@ def build_long_frame(data: pd.DataFrame) -> pd.DataFrame:
     return frame
 
 
-def build_chart(data: pd.DataFrame, *, interactive: bool, height: int) -> alt.Chart | None:
+def build_chart(data: pd.DataFrame, *, interactive: bool, height: int, accessible_line_styles: bool = True) -> alt.Chart | None:
     long_frame = build_long_frame(data)
     if long_frame.empty:
         return None
@@ -225,29 +225,34 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int) -> alt.Ch
         clear="pointerout"
     )
 
+    encode_args = {
+        "x": alt.X("Time:Q", title="Iterations"),
+        "y": alt.Y(
+            "Residual:Q",
+            title="Residuals",
+            scale=alt.Scale(type="log"),
+        ),
+        "color": alt.Color(
+            "Variable:N",
+            sort=ordered_cols,
+            legend=alt.Legend(title="Variable (click to isolate)")
+        ),
+        "opacity": alt.condition(selection, alt.value(1.0), alt.value(0.2)),
+        "strokeWidth": alt.condition(hover, alt.value(3), alt.value(1.5)),
+        "tooltip": [
+            alt.Tooltip("Time:Q", title="Iteration", format=".6g"),
+            alt.Tooltip("Variable:N", title="Variable"),
+            alt.Tooltip("Residual:Q", title="Residual", format=".6e"),
+        ],
+    }
+
+    if accessible_line_styles:
+        encode_args["strokeDash"] = alt.StrokeDash("Variable:N", legend=None)
+
     chart = (
         alt.Chart(long_frame)
         .mark_line()
-        .encode(
-            x=alt.X("Time:Q", title="Iterations"),
-            y=alt.Y(
-                "Residual:Q",
-                title="Residuals",
-                scale=alt.Scale(type="log"),
-            ),
-            color=alt.Color(
-                "Variable:N",
-                sort=ordered_cols,
-                legend=alt.Legend(title="Variable (click to isolate)")
-            ),
-            opacity=alt.condition(selection, alt.value(1.0), alt.value(0.2)),
-            strokeWidth=alt.condition(hover, alt.value(3), alt.value(1.5)),
-            tooltip=[
-                alt.Tooltip("Time:Q", title="Iteration", format=".6g"),
-                alt.Tooltip("Variable:N", title="Variable"),
-                alt.Tooltip("Residual:Q", title="Residual", format=".6e"),
-            ],
-        )
+        .encode(**encode_args)
         .add_params(selection, hover)
         .properties(
             height=height,
@@ -578,7 +583,7 @@ def main() -> None:
             data = item["data"]
             if show_filenames:
                 st.subheader(name)
-            chart = build_chart(data, interactive=True, height=interactive_height)
+            chart = build_chart(data, interactive=True, height=interactive_height, accessible_line_styles=accessible_line_styles)
             if chart is None:
                 st.warning(f"{name}: no positive residual values to chart (log-scale requires strictly positive values).", icon=":material/warning:")
             else:
