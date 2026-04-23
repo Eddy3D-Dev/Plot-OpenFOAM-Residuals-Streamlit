@@ -461,13 +461,13 @@ def main() -> None:
             disabled=not has_files,
             help="Adjust the vertical size (in pixels) of the static plots." if has_files else disabled_help
         )
-        show_grid = st.checkbox(
+        show_grid = st.toggle(
             "Show static grid",
             value=True,
             disabled=not has_files,
             help="Displays subtle grid lines on both major and minor ticks to improve readability on logarithmic scales." if has_files else disabled_help,
         )
-        accessible_line_styles = st.checkbox(
+        accessible_line_styles = st.toggle(
             "Use accessible line styles",
             value=True,
             disabled=not has_files,
@@ -567,7 +567,7 @@ def main() -> None:
 
     show_names_default = len(parsed_items) > 1
     with filenames_placeholder:
-        show_filenames = st.checkbox(
+        show_filenames = st.toggle(
             "Show filenames",
             value=show_names_default,
             disabled=show_names_default,
