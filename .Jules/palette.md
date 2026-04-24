@@ -5,3 +5,11 @@
 ## 2024-05-18 - Use Toggles for Immediate Visual Preferences
 **Learning:** For global settings that instantly toggle visual preferences (like grid lines, dark mode, or accessible line styles), users expect a "switch" interaction rather than a "checkbox" which implies submitting a form.
 **Action:** Use `st.toggle` instead of `st.checkbox` for settings in the sidebar or globally that immediately update the UI without further confirmation.
+
+## 2024-05-18 - Visual Hierarchy for Batch Actions
+**Learning:** Overarching batch actions (like "Export all as .zip") easily get lost among individual file download buttons. Additionally, standard Streamlit buttons can have small click targets, violating Fitts's Law.
+**Action:** Always apply `type="primary"` and `use_container_width=True` to batch action buttons (like `st.download_button` for zip files) to elevate their visual hierarchy and expand their click target, making them clearly distinct from individual item actions.
+
+## 2024-05-18 - Artifact Prevention in Sparklines
+**Learning:** When generating inline sparkline arrays for `st.metric` cards representing log-scaled data (like residuals), naively defaulting non-positive values to `0` (e.g. `[math.log10(v) if v > 0 else 0]`) creates massive, confusing visual spikes on the chart (since $10^0 = 1$), visually implying divergence rather than convergence.
+**Action:** When preparing log-scaled sparkline data, explicitly filter out non-positive values (e.g. `[math.log10(v) for v in data if v > 0]`) to ensure the generated trendline accurately reflects the underlying data without artificial spikes.
