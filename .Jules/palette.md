@@ -13,3 +13,7 @@
 ## 2024-05-18 - Artifact Prevention in Sparklines
 **Learning:** When generating inline sparkline arrays for `st.metric` cards representing log-scaled data (like residuals), naively defaulting non-positive values to `0` (e.g. `[math.log10(v) if v > 0 else 0]`) creates massive, confusing visual spikes on the chart (since $10^0 = 1$), visually implying divergence rather than convergence.
 **Action:** When preparing log-scaled sparkline data, explicitly filter out non-positive values (e.g. `[math.log10(v) for v in data if v > 0]`) to ensure the generated trendline accurately reflects the underlying data without artificial spikes.
+
+## 2024-05-19 - Merging Multiple Encodings into One Altair Legend
+**Learning:** When making an interactive Altair chart accessible with secondary encodings (like `strokeDash` alongside `color`), providing `legend=None` to the secondary encoding completely omits those visual cues from the legend. This leaves colorblind users unable to map the line styles to their respective variables.
+**Action:** To force Vega-Lite to merge multiple encodings (e.g., color and line style) into a single, fully accessible legend, ensure that both encodings share the exact same `legend` configuration (e.g., matching titles) and the exact same `sort` order.

@@ -247,7 +247,11 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int, accessibl
     }
 
     if accessible_line_styles:
-        encode_args["strokeDash"] = alt.StrokeDash("Variable:N", legend=None)
+        encode_args["strokeDash"] = alt.StrokeDash(
+            "Variable:N",
+            sort=ordered_cols,
+            legend=alt.Legend(title="Variable (click to isolate)")
+        )
 
     chart = (
         alt.Chart(long_frame)
