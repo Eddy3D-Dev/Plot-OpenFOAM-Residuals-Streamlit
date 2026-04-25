@@ -621,6 +621,7 @@ def main() -> None:
                     key=f"static_png_{file_id}",
                     icon=":material/image:",
                     help="Download this static plot as a PNG image.",
+                    use_container_width=True,
                 )
             if idx < len(parsed_items) - 1:
                 st.divider()
@@ -635,6 +636,8 @@ def main() -> None:
                 key="export_all_static_images_zip",
                 icon=":material/folder_zip:",
                 help="Download all static plot images as a single ZIP archive.",
+                type="primary",
+                use_container_width=True,
             )
 
     with tab_table:
@@ -662,7 +665,7 @@ def main() -> None:
                     else:
                         delta_str = f"{diff:.2e}"
 
-                    sparkline_data = [math.log10(v) if v > 0 else 0 for v in clean_series.tolist()]
+                    sparkline_data = [math.log10(v) for v in clean_series.tolist() if v > 0]
                     sparkline_data = sparkline_data[::max(1, len(sparkline_data) // 100)]
 
                     with cols[j]:
@@ -697,6 +700,7 @@ def main() -> None:
                 key=f"table_csv_{file_id}",
                 icon=":material/download:",
                 help="Download the raw residual data as a CSV file.",
+                use_container_width=True,
             )
             if idx < len(parsed_items) - 1:
                 st.divider()
@@ -711,6 +715,8 @@ def main() -> None:
                 key="export_all_data_zip",
                 icon=":material/folder_zip:",
                 help="Download all raw residual data as a single ZIP archive.",
+                type="primary",
+                use_container_width=True,
             )
 
     with st.expander("FAQ: OpenFOAM Residual Plotting", icon=":material/help:"):
