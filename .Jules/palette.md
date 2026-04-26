@@ -1,3 +1,7 @@
+## 2026-04-26 - Merge Altair Encodings for Cohesive Accessibility Legends
+**Learning:** When using secondary visual encodings (like `strokeDash`) alongside `color` for colorblind accessibility in Altair, setting `legend=None` on the secondary encoding omits its pattern from the legend entirely. This prevents visually impaired users from mapping legend items to chart lines.
+**Action:** To force Vega-Lite to merge the color and line style visual cues into a single cohesive legend, ensure both the `color` and `strokeDash` encodings share the exact same `legend` configuration (e.g., matching titles) and `sort` order. Never use `legend=None` for the secondary encoding.
+
 ## 2026-04-22 - Altair StrokeDash for Colorblind Accessibility
 **Learning:** Relying solely on the `color` encoding in interactive Altair line charts makes them inaccessible to colorblind users. While Streamlit has settings to make static Matplotlib plots accessible via line styles, these are often not propagated to dynamic Altair charts.
 **Action:** When building interactive Altair line charts in Streamlit, link a user-controlled accessibility toggle (like an `accessible_line_styles` checkbox) to dynamically add a `strokeDash` encoding (e.g., `strokeDash=alt.StrokeDash("Variable:N", legend=None)`) alongside `color`. This ensures colorblind users can distinguish series using patterns.
