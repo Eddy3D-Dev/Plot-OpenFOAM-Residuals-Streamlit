@@ -1,6 +1,6 @@
 ## 2026-04-22 - Altair StrokeDash for Colorblind Accessibility
 **Learning:** Relying solely on the `color` encoding in interactive Altair line charts makes them inaccessible to colorblind users. While Streamlit has settings to make static Matplotlib plots accessible via line styles, these are often not propagated to dynamic Altair charts.
-**Action:** When building interactive Altair line charts in Streamlit, link a user-controlled accessibility toggle (like an `accessible_line_styles` checkbox) to dynamically add a `strokeDash` encoding (e.g., `strokeDash=alt.StrokeDash("Variable:N", legend=None)`) alongside `color`. This ensures colorblind users can distinguish series using patterns.
+**Action:** When building interactive Altair line charts in Streamlit, link a user-controlled accessibility toggle (like an `accessible_line_styles` checkbox) to dynamically add a `strokeDash` encoding alongside `color`. To force Vega-Lite to merge the color and line style visual cues into a single, cohesive legend, ensure both the `color` and `strokeDash` encodings share the exact same `legend` configuration (e.g., matching titles) and `sort` order. Never use `legend=None` for the secondary encoding, as it will omit those cues from the legend entirely.
 
 ## 2024-05-18 - Use Toggles for Immediate Visual Preferences
 **Learning:** For global settings that instantly toggle visual preferences (like grid lines, dark mode, or accessible line styles), users expect a "switch" interaction rather than a "checkbox" which implies submitting a form.
