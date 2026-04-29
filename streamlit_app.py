@@ -462,6 +462,8 @@ def main() -> None:
     with st.sidebar:
         st.header("⚙️ Plot Settings")
         filenames_placeholder = st.empty()
+
+        st.markdown("#### Plot Dimensions")
         interactive_height = st.slider(
             "Interactive plot height", 240, 900, 420, 20,
             format="%d px",
@@ -474,6 +476,9 @@ def main() -> None:
             disabled=not has_files,
             help="Adjust the vertical size (in pixels) of the static plots." if has_files else disabled_help
         )
+
+        st.divider()
+        st.markdown("#### Styling & Accessibility")
         show_grid = st.toggle(
             "Show static grid",
             value=True,
@@ -484,7 +489,7 @@ def main() -> None:
             "Use accessible line styles",
             value=True,
             disabled=not has_files,
-            help="Combines colors with different line styles to ensure static plots are readable for colorblind users and in black-and-white." if has_files else disabled_help,
+            help="Combines colors with different line styles to ensure both interactive and static plots are readable for colorblind users and in black-and-white." if has_files else disabled_help,
         )
 
     if not has_files:
@@ -537,7 +542,7 @@ def main() -> None:
         files_to_process = [DummyFile("test_residual.dat", sample_data)]
 
         st.info("Currently viewing sample data.", icon=":material/visibility:")
-        if st.button("Clear sample data", icon=":material/close:", help="Clear the sample data to upload your own files."):
+        if st.button("Clear sample data", icon=":material/close:", use_container_width=True, help="Clear the sample data to upload your own files."):
             st.session_state.use_sample_data = False
             st.rerun()
     else:
