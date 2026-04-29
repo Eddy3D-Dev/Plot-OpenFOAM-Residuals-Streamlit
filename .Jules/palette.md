@@ -21,3 +21,7 @@
 ## 2024-05-19 - Merging Multiple Encodings into One Altair Legend
 **Learning:** When making an interactive Altair chart accessible with secondary encodings (like `strokeDash` alongside `color`), providing `legend=None` to the secondary encoding completely omits those visual cues from the legend. This leaves colorblind users unable to map the line styles to their respective variables.
 **Action:** To force Vega-Lite to merge multiple encodings (e.g., color and line style) into a single, fully accessible legend, ensure that both encodings share the exact same `legend` configuration (e.g., matching titles) and the exact same `sort` order.
+
+## 2026-04-28 - Colorblind Safe Palettes in Streamlit Charts
+**Learning:** While combining line styles with colors improves accessibility in charts, the default categorical color palettes (like `category10` in Vega-Lite or `default` in Matplotlib) are not fully colorblind safe. This can still make distinguishing between variables difficult even with different dash patterns.
+**Action:** When implementing an accessibility toggle for charts, actively switch the color scales to colorblind-safe schemes (like `scheme="dark2"` for Altair and `plt.style.context("tableau-colorblind10")` for Matplotlib) in addition to applying varying line styles. This provides robust multi-channel differentiation.

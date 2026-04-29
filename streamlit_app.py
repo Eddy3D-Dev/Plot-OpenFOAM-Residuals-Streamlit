@@ -247,6 +247,12 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int, accessibl
     }
 
     if accessible_line_styles:
+        encode_args["color"] = alt.Color(
+            "Variable:N",
+            sort=ordered_cols,
+            legend=alt.Legend(title="Variable (click to isolate)"),
+            scale=alt.Scale(scheme="dark2"),
+        )
         encode_args["strokeDash"] = alt.StrokeDash(
             "Variable:N",
             sort=ordered_cols,
@@ -275,34 +281,37 @@ def build_matplotlib_figure(data: pd.DataFrame, *, height_pixels: int, show_grid
     ordered_cols.extend([c for c in data.columns if c not in ordered_cols])
 
     fig_height = max(2.4, height_pixels / 100.0)
-    fig, ax = plt.subplots(figsize=(10, fig_height))
-    has_series = False
 
-    if accessible_line_styles:
-        line_styles = itertools.cycle(["-", "--", "-.", ":"])
-    else:
-        line_styles = itertools.cycle(["-"])
+    style = "tableau-colorblind10" if accessible_line_styles else "default"
+    with plt.style.context(style):
+        fig, ax = plt.subplots(figsize=(10, fig_height))
+        has_series = False
 
-    for column in ordered_cols:
-        residual = pd.to_numeric(data[column], errors="coerce")
-        mask = time_values.notna() & residual.notna() & (residual > 0)
-        if not mask.any():
-            continue
-        ax.plot(time_values[mask], residual[mask], label=column, linewidth=2, linestyle=next(line_styles))
-        has_series = True
+        if accessible_line_styles:
+            line_styles = itertools.cycle(["-", "--", "-.", ":"])
+        else:
+            line_styles = itertools.cycle(["-"])
 
-    if not has_series:
-        plt.close(fig)
-        return None
+        for column in ordered_cols:
+            residual = pd.to_numeric(data[column], errors="coerce")
+            mask = time_values.notna() & residual.notna() & (residual > 0)
+            if not mask.any():
+                continue
+            ax.plot(time_values[mask], residual[mask], label=column, linewidth=2, linestyle=next(line_styles))
+            has_series = True
 
-    ax.set_xlabel("Iterations")
-    ax.set_ylabel("Residuals")
-    ax.set_yscale("log")
-    if show_grid:
-        ax.grid(True, which="both", linestyle="--", linewidth=0.5, alpha=0.4)
-    ax.legend(loc="best")
-    fig.tight_layout()
-    return fig
+        if not has_series:
+            plt.close(fig)
+            return None
+
+        ax.set_xlabel("Iterations")
+        ax.set_ylabel("Residuals")
+        ax.set_yscale("log")
+        if show_grid:
+            ax.grid(True, which="both", linestyle="--", linewidth=0.5, alpha=0.4)
+        ax.legend(loc="best")
+        fig.tight_layout()
+        return fig
 
 
 def figure_to_png_bytes(figure: plt.Figure, *, dpi: int = 200) -> bytes:
