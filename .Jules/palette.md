@@ -25,3 +25,7 @@
 ## 2026-04-28 - Colorblind Safe Palettes in Streamlit Charts
 **Learning:** While combining line styles with colors improves accessibility in charts, the default categorical color palettes (like `category10` in Vega-Lite or `default` in Matplotlib) are not fully colorblind safe. This can still make distinguishing between variables difficult even with different dash patterns.
 **Action:** When implementing an accessibility toggle for charts, actively switch the color scales to colorblind-safe schemes (like `scheme="dark2"` for Altair and `plt.style.context("tableau-colorblind10")` for Matplotlib) in addition to applying varying line styles. This provides robust multi-channel differentiation.
+
+## 2026-04-30 - Cognitive Chunking in Configuration Sidebars
+**Learning:** When sidebars accumulate multiple independent settings (e.g., plot dimensions alongside accessibility toggles), presenting them as a flat list increases cognitive load and degrades discoverability.
+**Action:** Use `st.markdown("#### Category Name")` and `st.divider()` in Streamlit to create semantic groups (cognitive chunking). This visual hierarchy helps users quickly locate specific classes of settings without scanning the entire list.
