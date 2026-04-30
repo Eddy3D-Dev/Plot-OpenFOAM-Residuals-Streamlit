@@ -460,10 +460,10 @@ def main() -> None:
     disabled_help = "⚠️ Please upload a residual file first to enable this setting."
 
     with st.sidebar:
-        st.header("⚙️ Plot Settings")
+        st.header(":material/settings: Plot Settings")
         filenames_placeholder = st.empty()
 
-        st.markdown("#### Plot Dimensions")
+        st.markdown("#### :material/straighten: Plot Dimensions")
         interactive_height = st.slider(
             "Interactive plot height", 240, 900, 420, 20,
             format="%d px",
@@ -478,7 +478,7 @@ def main() -> None:
         )
 
         st.divider()
-        st.markdown("#### Styling & Accessibility")
+        st.markdown("#### :material/accessibility_new: Styling & Accessibility")
         show_grid = st.toggle(
             "Show static grid",
             value=True,
@@ -667,7 +667,7 @@ def main() -> None:
             if show_filenames:
                 st.subheader(name)
 
-            st.markdown("#### Final Convergence Summary")
+            st.markdown("#### :material/summarize: Final Convergence Summary")
             valid_cols = [c for c in data.columns if not data[c].dropna().empty]
 
             for i in range(0, len(valid_cols), 4):
@@ -740,13 +740,13 @@ def main() -> None:
     with st.expander("FAQ: OpenFOAM Residual Plotting", icon=":material/help:"):
         st.markdown(
             """
-            #### What files are supported?
+            #### :material/file_present: What files are supported?
             OpenFOAM residual `.dat`, `.log`, and `.txt` files that contain solver residual entries.
 
-            #### Are residual plots on log scale?
+            #### :material/show_chart: Are residual plots on log scale?
             Yes. Interactive and static plots use a logarithmic residual axis for convergence analysis.
 
-            #### Can I export outputs?
+            #### :material/download: Can I export outputs?
             Yes. Export per-file CSV tables and download all static plot images as a ZIP file.
             """
         )
