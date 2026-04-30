@@ -29,3 +29,7 @@
 ## 2026-04-30 - Cognitive Chunking in Configuration Sidebars
 **Learning:** When sidebars accumulate multiple independent settings (e.g., plot dimensions alongside accessibility toggles), presenting them as a flat list increases cognitive load and degrades discoverability.
 **Action:** Use `st.markdown("#### Category Name")` and `st.divider()` in Streamlit to create semantic groups (cognitive chunking). This visual hierarchy helps users quickly locate specific classes of settings without scanning the entire list.
+
+## 2026-04-30 - Material Icons for Consistent Scannability in Headings
+**Learning:** Using OS-dependent emojis (like ⚙️) or plain text for semantic headers creates inconsistent visual experiences across platforms and breaks visual harmony with components that natively support Streamlit Material icons (like buttons, tabs, or toasts).
+**Action:** Always prefer embedding Streamlit Material Design icon syntax (e.g., `:material/settings:`) directly into markdown headings (`st.markdown("#### :material/icon: Title")` or `st.header(":material/icon: Title")`) to establish a consistent, polished visual hierarchy and improve cognitive chunking and scannability.
