@@ -427,6 +427,10 @@ def make_file_id(name: str, raw_bytes: bytes) -> str:
     return f"{name}-{digest}"
 
 
+def get_file_icon(filename: str) -> str:
+    return ":material/article:" if filename.lower().endswith((".log", ".out", ".txt")) else ":material/description:"
+
+
 def main() -> None:
     st.set_page_config(page_title=SEO_TITLE, page_icon="📈")
     inject_seo_metadata()
@@ -600,7 +604,7 @@ def main() -> None:
             file_id = str(item["file_id"])
             data = item["data"]
             if show_filenames:
-                st.subheader(name)
+                st.subheader(f"{get_file_icon(name)} {name}")
             chart = build_chart(data, interactive=True, height=interactive_height, accessible_line_styles=accessible_line_styles)
             if chart is None:
                 st.warning(f"{name}: no positive residual values to chart (log-scale requires strictly positive values).", icon=":material/warning:")
@@ -617,7 +621,7 @@ def main() -> None:
             file_id = str(item["file_id"])
             data = item["data"]
             if show_filenames:
-                st.subheader(name)
+                st.subheader(f"{get_file_icon(name)} {name}")
             figure = build_matplotlib_figure(
                 data,
                 height_pixels=static_height,
@@ -665,7 +669,7 @@ def main() -> None:
             file_id = str(item["file_id"])
             data = item["data"]
             if show_filenames:
-                st.subheader(name)
+                st.subheader(f"{get_file_icon(name)} {name}")
 
             st.markdown("#### :material/summarize: Final Convergence Summary")
             valid_cols = [c for c in data.columns if not data[c].dropna().empty]

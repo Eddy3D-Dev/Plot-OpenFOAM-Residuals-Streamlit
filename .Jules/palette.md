@@ -1,3 +1,7 @@
+## 2026-05-02 - Contextual Icons for Comparison Views
+**Learning:** In multi-file upload workflows or comparison views where repeated items (like charts or tables) are stacked vertically, using plain text headings for filenames makes scanning and distinguishing file types cognitively demanding.
+**Action:** Dynamically inject format-specific Streamlit Material icons (e.g., `:material/article:` for `.log` files, `:material/description:` for `.dat` files) directly into repeated `st.subheader` strings. This creates a strong visual hierarchy, improves cognitive chunking, and allows users to quickly scan and differentiate file types at a glance.
+
 ## 2026-04-26 - Merge Altair Encodings for Cohesive Accessibility Legends
 **Learning:** When using secondary visual encodings (like `strokeDash`) alongside `color` for colorblind accessibility in Altair, setting `legend=None` on the secondary encoding omits its pattern from the legend entirely. This prevents visually impaired users from mapping legend items to chart lines.
 **Action:** To force Vega-Lite to merge the color and line style visual cues into a single cohesive legend, ensure both the `color` and `strokeDash` encodings share the exact same `legend` configuration (e.g., matching titles) and `sort` order. Never use `legend=None` for the secondary encoding.
