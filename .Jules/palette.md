@@ -37,3 +37,7 @@
 ## 2026-04-30 - Material Icons for Consistent Scannability in Headings
 **Learning:** Using OS-dependent emojis (like ⚙️) or plain text for semantic headers creates inconsistent visual experiences across platforms and breaks visual harmony with components that natively support Streamlit Material icons (like buttons, tabs, or toasts).
 **Action:** Always prefer embedding Streamlit Material Design icon syntax (e.g., `:material/settings:`) directly into markdown headings (`st.markdown("#### :material/icon: Title")` or `st.header(":material/icon: Title")`) to establish a consistent, polished visual hierarchy and improve cognitive chunking and scannability.
+
+## 2026-05-03 - Consistent Sidebar Layouts without DuplicateWidgetID Exceptions
+**Learning:** Attempting to pre-render a "disabled" UI control (like `st.toggle`) in a placeholder and then overwriting it *later in the same script execution* causes a fatal `DuplicateWidgetID` error in Streamlit, because Streamlit registers both widget calls even if they target the same `st.empty()`.
+**Action:** To prevent layout shifts for controls that depend on parsed data while avoiding duplicate widget errors, inspect the input data *before* rendering the sidebar. This allows you to render the control statically exactly once (with the correct active/disabled state computed upfront) within its semantic group, ensuring visual chunking and layout stability without brittle placeholder overwriting.

@@ -434,7 +434,7 @@ def get_file_icon(filename: str) -> str:
 def main() -> None:
     st.set_page_config(page_title=SEO_TITLE, page_icon="📈")
     inject_seo_metadata()
-    st.title("Plot OpenFOAM Residuals")
+    st.title(":material/monitoring: Plot OpenFOAM Residuals")
     st.caption(
         "Upload OpenFOAM residual `.dat` and `.log` files to analyze CFD convergence "
         "with interactive and static residual plots."
@@ -448,7 +448,7 @@ def main() -> None:
     )
 
     uploaded_files = st.file_uploader(
-        "Upload OpenFOAM residual files",
+        ":material/upload_file: Upload OpenFOAM residual files",
         type=["dat", "log", "txt"],
         accept_multiple_files=True,
         help="Upload multiple .dat or .log files to compare convergence side-by-side.",
@@ -463,9 +463,38 @@ def main() -> None:
     has_files = bool(uploaded_files) or st.session_state.use_sample_data
     disabled_help = "⚠️ Please upload a residual file first to enable this setting."
 
+    # To determine if we should force showing filenames, we must inspect the files to be processed
+    # before rendering the sidebar toggle.
+    files_to_process = []
+    if st.session_state.use_sample_data and not uploaded_files:
+        class DummyFile:
+            def __init__(self, name: str, data: bytes):
+                self.name = name
+                self._data = data
+            def getvalue(self) -> bytes:
+                return self._data
+
+        sample_path = Path(__file__).parent / "test_residual.dat"
+        with open(sample_path, "rb") as f:
+            sample_data = f.read()
+        files_to_process = [DummyFile("test_residual.dat", sample_data)]
+    else:
+        files_to_process = uploaded_files
+
+    # Force show filenames if we have > 1 files to process
+    force_show_names = len(files_to_process) > 1
+
     with st.sidebar:
         st.header(":material/settings: Plot Settings")
-        filenames_placeholder = st.empty()
+
+        st.markdown("#### :material/visibility: Display Options")
+        show_filenames = st.toggle(
+            "Show filenames",
+            value=force_show_names,
+            disabled=force_show_names or not has_files,
+            help="Filenames are always shown when comparing multiple files." if force_show_names else ("Show the filename above each plot." if has_files else disabled_help),
+        )
+        st.divider()
 
         st.markdown("#### :material/straighten: Plot Dimensions")
         interactive_height = st.slider(
@@ -533,24 +562,10 @@ def main() -> None:
         return
 
     if st.session_state.use_sample_data and not uploaded_files:
-        class DummyFile:
-            def __init__(self, name: str, data: bytes):
-                self.name = name
-                self._data = data
-            def getvalue(self) -> bytes:
-                return self._data
-
-        sample_path = Path(__file__).parent / "test_residual.dat"
-        with open(sample_path, "rb") as f:
-            sample_data = f.read()
-        files_to_process = [DummyFile("test_residual.dat", sample_data)]
-
         st.info("Currently viewing sample data.", icon=":material/visibility:")
         if st.button("Clear sample data", icon=":material/close:", use_container_width=True, help="Clear the sample data to upload your own files."):
             st.session_state.use_sample_data = False
             st.rerun()
-    else:
-        files_to_process = uploaded_files
 
     parsed_items: list[dict[str, object]] = []
     errors: list[tuple[str, str, str]] = []
@@ -586,15 +601,6 @@ def main() -> None:
 
     if not parsed_items:
         return
-
-    show_names_default = len(parsed_items) > 1
-    with filenames_placeholder:
-        show_filenames = st.toggle(
-            "Show filenames",
-            value=show_names_default,
-            disabled=show_names_default,
-            help="Filenames are always shown when comparing multiple files." if show_names_default else "Show the filename above each plot.",
-        )
 
     tab_interactive, tab_static, tab_table = st.tabs([":material/show_chart: Interactive Plot", ":material/image: Static Plot", ":material/table_view: Raw Data"])
 
