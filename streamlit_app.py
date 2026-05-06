@@ -231,6 +231,7 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int, accessibl
             "Residual:Q",
             title="Residuals",
             scale=alt.Scale(type="log"),
+            axis=alt.Axis(format="e"),
         ),
         "color": alt.Color(
             "Variable:N",
