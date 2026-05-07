@@ -41,3 +41,7 @@
 ## 2026-05-03 - Consistent Sidebar Layouts without DuplicateWidgetID Exceptions
 **Learning:** Attempting to pre-render a "disabled" UI control (like `st.toggle`) in a placeholder and then overwriting it *later in the same script execution* causes a fatal `DuplicateWidgetID` error in Streamlit, because Streamlit registers both widget calls even if they target the same `st.empty()`.
 **Action:** To prevent layout shifts for controls that depend on parsed data while avoiding duplicate widget errors, inspect the input data *before* rendering the sidebar. This allows you to render the control statically exactly once (with the correct active/disabled state computed upfront) within its semantic group, ensuring visual chunking and layout stability without brittle placeholder overwriting.
+
+## 2026-05-06 - Explicit Scientific Notation for Log-Scaled Engineering Axes
+**Learning:** When visualizing small engineering values (like CFD residuals) on a log-scaled axis in Altair/Vega-Lite, the default axis formatting often fails to render very small numbers legibly, either dropping them to `0` or creating extremely long decimals that clip text.
+**Action:** Always explicitly specify scientific notation for the axis formatting (e.g., `axis=alt.Axis(format="e")`) when dealing with small, log-scaled engineering variables. This aligns with domain conventions, maintains precise scaling visibility, and prevents text clipping in the UI.
