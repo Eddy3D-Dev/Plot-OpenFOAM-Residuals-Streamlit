@@ -45,3 +45,6 @@
 ## 2026-05-06 - Explicit Scientific Notation for Log-Scaled Engineering Axes
 **Learning:** When visualizing small engineering values (like CFD residuals) on a log-scaled axis in Altair/Vega-Lite, the default axis formatting often fails to render very small numbers legibly, either dropping them to `0` or creating extremely long decimals that clip text.
 **Action:** Always explicitly specify scientific notation for the axis formatting (e.g., `axis=alt.Axis(format="e")`) when dealing with small, log-scaled engineering variables. This aligns with domain conventions, maintains precise scaling visibility, and prevents text clipping in the UI.
+## 2025-05-08 - [Altair Quantitative Axes Default to Zero]
+**Learning:** By default, Altair (Vega-Lite) quantitative axes (`:Q`) include `0`, which can severely compress data when visualizing time series or offset values (e.g., iterations starting at 10,000).
+**Action:** Use `scale=alt.Scale(zero=False)` explicitly when plotting quantitative offset data like iterations, times, or dates that are far from zero to ensure the data fills the chart area optimally.

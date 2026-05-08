@@ -226,7 +226,7 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int, accessibl
     )
 
     encode_args = {
-        "x": alt.X("Time:Q", title="Iterations"),
+        "x": alt.X("Time:Q", title="Iterations", scale=alt.Scale(zero=False)),
         "y": alt.Y(
             "Residual:Q",
             title="Residuals",
