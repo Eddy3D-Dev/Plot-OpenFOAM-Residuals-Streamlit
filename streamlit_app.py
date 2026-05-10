@@ -272,7 +272,7 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int, accessibl
     )
 
     if interactive:
-        return chart.interactive()
+        return chart.interactive(bind_y=False)
     return chart
 
 

@@ -48,3 +48,7 @@
 ## 2025-05-08 - [Altair Quantitative Axes Default to Zero]
 **Learning:** By default, Altair (Vega-Lite) quantitative axes (`:Q`) include `0`, which can severely compress data when visualizing time series or offset values (e.g., iterations starting at 10,000).
 **Action:** Use `scale=alt.Scale(zero=False)` explicitly when plotting quantitative offset data like iterations, times, or dates that are far from zero to ensure the data fills the chart area optimally.
+
+## 2026-05-10 - Unidirectional Zooming for Time-Series Logs
+**Learning:** When users interact with a time-series chart (or convergence plot) that uses a log-scaled Y-axis, allowing default two-dimensional zooming (both X and Y axes) is highly disorienting. Zooming on a log-scaled Y-axis distorts the relative magnitude of values and quickly leads to users getting "lost" in the plot.
+**Action:** When enabling interactivity (panning/zooming) on Altair charts where the Y-axis represents magnitude or uses a log scale over time/iterations, restrict the interactivity solely to the X-axis using `chart.interactive(bind_y=False)`. This preserves the vertical scale perspective while allowing users to scrub through the time domain.
