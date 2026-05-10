@@ -52,3 +52,7 @@
 ## 2026-05-10 - Unidirectional Zooming for Time-Series Logs
 **Learning:** When users interact with a time-series chart (or convergence plot) that uses a log-scaled Y-axis, allowing default two-dimensional zooming (both X and Y axes) is highly disorienting. Zooming on a log-scaled Y-axis distorts the relative magnitude of values and quickly leads to users getting "lost" in the plot.
 **Action:** When enabling interactivity (panning/zooming) on Altair charts where the Y-axis represents magnitude or uses a log scale over time/iterations, restrict the interactivity solely to the X-axis using `chart.interactive(bind_y=False)`. This preserves the vertical scale perspective while allowing users to scrub through the time domain.
+
+## 2026-05-15 - Expose Hidden Interactivity in Legends
+**Learning:** Native visualization capabilities like Altair/Vega-Lite's `shift-click` multi-select functionality in interactive legends are completely invisible by default. This makes the feature undiscoverable for sighted users and inaccessible for screen reader users unless explicitly documented in the UI.
+**Action:** When enabling interactive selections (e.g. `bind='legend'`) in charts, explicitly append instructions for advanced modifier key interactions directly into the legend title (e.g., `title="Variable (click to isolate, shift-click for multiple)"`) and the chart's ARIA `description` to ensure the interaction is discoverable and accessible to all users.

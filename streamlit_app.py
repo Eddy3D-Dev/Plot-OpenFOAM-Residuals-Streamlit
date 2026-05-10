@@ -236,7 +236,7 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int, accessibl
         "color": alt.Color(
             "Variable:N",
             sort=ordered_cols,
-            legend=alt.Legend(title="Variable (click to isolate)")
+            legend=alt.Legend(title=["Variable", "(click to isolate,", "shift-click to multi-select)"])
         ),
         "opacity": alt.condition(selection, alt.value(1.0), alt.value(0.2)),
         "strokeWidth": alt.condition(hover, alt.value(3), alt.value(1.5)),
@@ -251,13 +251,13 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int, accessibl
         encode_args["color"] = alt.Color(
             "Variable:N",
             sort=ordered_cols,
-            legend=alt.Legend(title="Variable (click to isolate)"),
+            legend=alt.Legend(title=["Variable", "(click to isolate,", "shift-click to multi-select)"]),
             scale=alt.Scale(scheme="dark2"),
         )
         encode_args["strokeDash"] = alt.StrokeDash(
             "Variable:N",
             sort=ordered_cols,
-            legend=alt.Legend(title="Variable (click to isolate)")
+            legend=alt.Legend(title=["Variable", "(click to isolate,", "shift-click to multi-select)"])
         )
 
     chart = (
@@ -267,7 +267,7 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int, accessibl
         .add_params(selection, hover)
         .properties(
             height=height,
-            description=f"Interactive line chart showing OpenFOAM residual convergence over iterations for variables: {', '.join(ordered_cols)}. Use the legend to isolate specific variables."
+            description=f"Interactive line chart showing OpenFOAM residual convergence over iterations for variables: {', '.join(ordered_cols)}. Use the legend to isolate specific variables, or shift-click to select multiple."
         )
     )
 
