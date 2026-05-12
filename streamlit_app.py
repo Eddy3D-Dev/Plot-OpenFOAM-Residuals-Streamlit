@@ -530,9 +530,9 @@ def main() -> None:
         st.info("Upload one or more OpenFOAM residual files to start. Supported formats:", icon=":material/upload_file:")
         tab_dat, tab_log = st.tabs([":material/description: .dat Example", ":material/article: .log Example"])
         with tab_dat:
-            st.code("# OpenFOAM\n# Time alpha beta gamma\n1 0.1 0.2 0.3\n2 0.01 0.02 0.03", language="text")
+            st.code("# OpenFOAM\n# Time alpha beta gamma\n1 0.1 0.2 0.3\n2 0.01 0.02 0.03", language="text", wrap_lines=True)
         with tab_log:
-            st.code("Time = 1\nSolving for Ux, Initial residual = 0.1, Final residual = 0.01, No Iterations 10\nSolving for Uy, Initial residual = 0.2, Final residual = 0.02, No Iterations 10", language="text")
+            st.code("Time = 1\nSolving for Ux, Initial residual = 0.1, Final residual = 0.01, No Iterations 10\nSolving for Uy, Initial residual = 0.2, Final residual = 0.02, No Iterations 10", language="text", wrap_lines=True)
 
         # Load sample data robustly using path relative to this script
         sample_path = Path(__file__).parent / "test_residual.dat"
@@ -598,7 +598,7 @@ def main() -> None:
     for filename, message, tb in errors:
         st.error(f"**{filename}**: {message}", icon=":material/error:")
         with st.expander("View error details", icon=":material/bug_report:"):
-            st.code(tb, language="python")
+            st.code(tb, language="python", wrap_lines=True)
 
     if not parsed_items:
         return

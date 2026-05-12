@@ -56,3 +56,7 @@
 ## 2026-05-15 - Expose Hidden Interactivity in Legends
 **Learning:** Native visualization capabilities like Altair/Vega-Lite's `shift-click` multi-select functionality in interactive legends are completely invisible by default. This makes the feature undiscoverable for sighted users and inaccessible for screen reader users unless explicitly documented in the UI.
 **Action:** When enabling interactive selections (e.g. `bind='legend'`) in charts, explicitly append instructions for advanced modifier key interactions directly into the legend title (e.g., `title="Variable (click to isolate, shift-click for multiple)"`) and the chart's ARIA `description` to ensure the interaction is discoverable and accessible to all users.
+
+## 2026-05-18 - Wrapping Lines in Code Blocks for Scannability
+**Learning:** When displaying long text lines (such as OpenFOAM log file lines or Python tracebacks) inside code blocks (`st.code`), the default horizontal scrolling makes the text extremely difficult to read and breaks the flow of scanning the UI.
+**Action:** Always enable line wrapping (`wrap_lines=True`) in `st.code` blocks when displaying content that is expected to have long lines (like log file examples or error tracebacks) to improve scannability and ensure users can see the full context without tedious horizontal scrolling.
