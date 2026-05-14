@@ -60,3 +60,7 @@
 ## 2026-05-18 - Wrapping Lines in Code Blocks for Scannability
 **Learning:** When displaying long text lines (such as OpenFOAM log file lines or Python tracebacks) inside code blocks (`st.code`), the default horizontal scrolling makes the text extremely difficult to read and breaks the flow of scanning the UI.
 **Action:** Always enable line wrapping (`wrap_lines=True`) in `st.code` blocks when displaying content that is expected to have long lines (like log file examples or error tracebacks) to improve scannability and ensure users can see the full context without tedious horizontal scrolling.
+
+## 2026-05-19 - Expose Invisible Interactions (Zoom/Pan) in Charts
+**Learning:** Native chart interactions like scrolling to zoom or dragging to pan are completely invisible affordances. Users may not realize they can interact with the visualization, especially when specific axes are constrained (e.g., vertical zooming disabled).
+**Action:** Always provide explicit, concise instructions (e.g., via `st.caption` with an icon) near the interactive chart explaining how to navigate the visualization. This ensures that powerful interactions are discoverable rather than hidden.

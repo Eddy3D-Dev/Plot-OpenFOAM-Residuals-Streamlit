@@ -606,6 +606,10 @@ def main() -> None:
     tab_interactive, tab_static, tab_table = st.tabs([":material/show_chart: Interactive Plot", ":material/image: Static Plot", ":material/table_view: Raw Data"])
 
     with tab_interactive:
+        st.caption(
+            ":material/lightbulb: **Tip:** Scroll to zoom the X-axis (Iterations) and drag to pan. "
+            "Vertical zooming is disabled to preserve the log-scale perspective."
+        )
         for idx, item in enumerate(parsed_items):
             name = str(item["name"])
             file_id = str(item["file_id"])
@@ -705,7 +709,7 @@ def main() -> None:
                             delta_color="inverse",
                             border=True,
                             chart_data=sparkline_data,
-                            help=f"Change from initial iteration ({first_val:.4e})",
+                            help=f"Change from initial iteration ({first_val:.4e}). 'OoM' indicates Orders of Magnitude.",
                         )
 
             col_config = {c: st.column_config.NumberColumn(format="%.4e", help=f"Residual values for the '{c}' field") for c in valid_cols}
