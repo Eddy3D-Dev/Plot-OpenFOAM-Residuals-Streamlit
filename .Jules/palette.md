@@ -64,3 +64,15 @@
 ## 2026-05-19 - Expose Invisible Interactions (Zoom/Pan) in Charts
 **Learning:** Native chart interactions like scrolling to zoom or dragging to pan are completely invisible affordances. Users may not realize they can interact with the visualization, especially when specific axes are constrained (e.g., vertical zooming disabled).
 **Action:** Always provide explicit, concise instructions (e.g., via `st.caption` with an icon) near the interactive chart explaining how to navigate the visualization. This ensures that powerful interactions are discoverable rather than hidden.
+
+## 2026-05-20 - Expose Interactive Chart Elements with Cursor
+**Learning:** By default, interactive marks (like lines or points with tooltips) in Altair/Vega-Lite render with a standard text or default cursor arrow. Sighted users lack an immediate, intuitive visual affordance indicating that the chart elements support hover states or tooltips.
+**Action:** When building interactive Altair charts, explicitly set `cursor="pointer"` on the primary chart mark (e.g., `chart.mark_line(cursor="pointer")`). This subtle interaction cue significantly improves the discoverability of tooltips and hover behaviors.
+
+## 2026-05-20 - Sticky Brand Navigation with st.logo
+**Learning:** In long-scrolling Streamlit applications, users can easily lose the context of the overarching application or miss an intuitive "escape hatch" to return to the home page or reset the app state. Standard titles scroll out of view.
+**Action:** Utilize `st.logo(..., link="...")` near the top of the application script to provide a persistent, sticky brand icon in the upper left corner of both the main body and the sidebar. Linking it to the app's canonical URL turns it into an intuitive, always-accessible "Home/Reset" affordance.
+
+## 2026-05-20 - st.logo Does Not Support Material Icons
+**Learning:** While many Streamlit components (like `st.button`, `st.header`, `st.toast`) natively support rendering Material Design icons via the `":material/icon_name:"` string syntax, the `st.logo` function **does not**. Passing a material icon string to `st.logo` causes Streamlit to interpret it as a local file path, resulting in a fatal `FileNotFoundError` that crashes the entire application.
+**Action:** Always provide a valid image URL (e.g., `https://...`) or a relative file path (e.g., `"./static/logo.png"`) to `st.logo`. Do not attempt to use Streamlit's Material Icon syntax here.

@@ -262,7 +262,7 @@ def build_chart(data: pd.DataFrame, *, interactive: bool, height: int, accessibl
 
     chart = (
         alt.Chart(long_frame)
-        .mark_line()
+        .mark_line(cursor="pointer")
         .encode(**encode_args)
         .add_params(selection, hover)
         .properties(
@@ -434,6 +434,7 @@ def get_file_icon(filename: str) -> str:
 
 def main() -> None:
     st.set_page_config(page_title=SEO_TITLE, page_icon="📈")
+    st.logo("https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/chart-line.svg", link=SEO_CANONICAL_URL)
     inject_seo_metadata()
     st.title(":material/monitoring: Plot OpenFOAM Residuals")
     st.caption(
