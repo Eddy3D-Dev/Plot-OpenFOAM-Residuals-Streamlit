@@ -609,7 +609,7 @@ def main() -> None:
     with tab_interactive:
         st.caption(
             ":material/lightbulb: **Tip:** Scroll to zoom the X-axis (Iterations) and drag to pan. "
-            "Vertical zooming is disabled to preserve the log-scale perspective."
+            "Vertical zooming is disabled to preserve the log-scale perspective. Double-click to reset the view."
         )
         for idx, item in enumerate(parsed_items):
             name = str(item["name"])
@@ -626,6 +626,10 @@ def main() -> None:
                 st.divider()
 
     with tab_static:
+        st.caption(
+            ":material/image: **Static Plots:** These high-resolution Matplotlib figures are ideal for "
+            "reports and publications. Use the sidebar to adjust their dimensions and styling."
+        )
         static_images: list[tuple[str, bytes]] = []
 
         for idx, item in enumerate(parsed_items):
@@ -675,6 +679,10 @@ def main() -> None:
             )
 
     with tab_table:
+        st.caption(
+            ":material/table_view: **Raw Data & Metrics:** Inspect the final convergence metrics and raw "
+            "residual values. Export the data to CSV for further analysis."
+        )
         all_csvs: list[tuple[str, bytes]] = []
         for idx, item in enumerate(parsed_items):
             name = str(item["name"])

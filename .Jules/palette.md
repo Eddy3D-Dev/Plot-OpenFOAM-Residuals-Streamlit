@@ -76,3 +76,10 @@
 ## 2026-05-20 - st.logo Does Not Support Material Icons
 **Learning:** While many Streamlit components (like `st.button`, `st.header`, `st.toast`) natively support rendering Material Design icons via the `":material/icon_name:"` string syntax, the `st.logo` function **does not**. Passing a material icon string to `st.logo` causes Streamlit to interpret it as a local file path, resulting in a fatal `FileNotFoundError` that crashes the entire application.
 **Action:** Always provide a valid image URL (e.g., `https://...`) or a relative file path (e.g., `"./static/logo.png"`) to `st.logo`. Do not attempt to use Streamlit's Material Icon syntax here.
+## 2026-05-21 - Expose Hidden Double-Click to Reset Interactions
+**Learning:** In interactive data visualizations like Altair, powerful interactions such as "double-click to reset zoom" are completely invisible to users unless explicitly stated. This can leave users stranded if they accidentally pan or zoom too far.
+**Action:** Always provide explicit UI instructions (e.g. `st.caption`) near the interactive chart explaining how to reset the visualization. This ensures that the interaction is discoverable and provides an immediate escape hatch for users exploring the data.
+
+## 2026-05-21 - Provide Contextual Guidance in Tabbed Interfaces
+**Learning:** When organizing distinct workflows (like interactive vs. static views) into tabbed interfaces, users may not immediately grasp the intended use case for each tab.
+**Action:** Use `st.caption` with contextual Material icons at the top of each tab block to briefly explain the tab's purpose (e.g. "These plots are ideal for static reports"). This sets user expectations and improves overall application scannability.
