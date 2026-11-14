@@ -14,7 +14,6 @@ import altair as alt
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 
 FEATURE_COLUMNS = ["Ux", "Uy", "Uz", "p", "epsilon", "k"]
 SEO_TITLE = "OpenFOAM Residual Plotter - Plot .dat and .log Files Online"
@@ -420,7 +419,7 @@ def inject_seo_metadata() -> None:
     </script>
     """
 
-    components.html(script, height=0, width=0)
+    st.iframe(script, height=1, width=1)
 
 
 def make_file_id(name: str, raw_bytes: bytes) -> str:
